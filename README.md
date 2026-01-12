@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# personal-blog
 
-## Getting Started
+A modern personal blog & knowledge base built with **Next.js**.
 
-First, run the development server:
+This site is designed for long-term knowledge accumulation and presentation of:
+- Learning notes written in **Markdown / MDX** (from Obsidian)
+- Interactive **React-based labs and demos**
+- Clean typography, dark mode, and high-quality reading experience
+
+---
+
+## ✨ Features
+
+- 📚 **Notes**: Markdown / MDX content with tags, archive, and series
+- 🧪 **Labs**: Interactive pages built with React and MDX
+- 🌓 **Dark Mode**: System-based theme switching
+- 💬 **Comments**: GitHub login via Giscus
+- 🔍 **Search**: Full-text search (build-time)
+- 🧮 **Math**: LaTeX formula rendering (inline & block)
+- 🚀 **Deploy**: Vercel + custom domain
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **Styling**: Tailwind CSS
+- **UI**: shadcn/ui, Radix UI
+- **Animation**: Framer Motion
+- **Content**: Markdown / MDX
+- **Comments**: GitHub Discussions (Giscus)
+- **Deploy**: Vercel
+
+---
+
+## 📂 Project Structure
+
+```
+
+src/
+app/          # App Router pages & layouts
+components/   # Reusable UI components
+lib/          # Utilities & content helpers
+content/
+notes/        # Markdown / MDX notes
+labs/         # Interactive MDX labs
+public/
+images/       # Static images
+
+````
+
+---
+
+## 🚀 Development
+
+Install dependencies:
+
+```bash
+npm install
+````
+
+Start local development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open in browser:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📝 Content Workflow
 
-To learn more about Next.js, take a look at the following resources:
+* Write notes in **Obsidian**
+* Export or sync Markdown files to `content/notes`
+* Commit & push to GitHub
+* Vercel automatically builds and deploys
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+No manual backend or database required.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📌 Status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project is under active development and will evolve incrementally:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Phase 1: Core blog & content system
+* Phase 2: Optional admin publishing UI
+* Phase 3: Advanced labs & performance optimizations
+
+---
+
+## 📄 License
+
+MIT
+
+````
+
+---
+
