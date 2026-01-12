@@ -7,6 +7,7 @@ import remarkRehype from "remark-rehype";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
+import rehypeSlug from "rehype-slug";
 import { visit } from "unist-util-visit";
 
 /**
@@ -151,6 +152,7 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
             .use(remarkObsidianCallout)
             .use(remarkRehype, { allowDangerousHtml: true }) // 允许 HTML 标签通过 (关键)
             .use(rehypeRaw) // 解析原始 HTML (如 <font>)
+            .use(rehypeSlug)
             .use(rehypeKatex)
             .use(rehypeStringify)
             .processSync(source);
