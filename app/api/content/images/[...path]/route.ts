@@ -1,10 +1,13 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import mime from "mime"; // 你可能需要安装: npm install mime @types/mime
+import mime from "mime"; // 确保已安装: npm install mime @types/mime
 
-// 辅助函数：在目录中递归查找文件
+// 辅助函数：在目录中递归查找文件 (保持不变)
 function findFile(dir: string, filename: string): string | null {
+    // 检查目录是否存在，防止 fs.readdirSync 报错
+    if (!fs.existsSync(dir)) return null;
+
     const entries = fs.readdirSync(dir, { withFileTypes: true });
 
     // 1. 先找当前目录的文件
@@ -24,25 +27,25 @@ function findFile(dir: string, filename: string): string | null {
     return null;
 }
 
+// 核心修改：Next.js 15 要求 params 是 Promise
 export async function GET(
     request: NextRequest,
-    { params }: { params: { path: string[] } }
+    props: { params: Promise<{ path: string[] }> }
 ) {
+    // 1. 等待 params 解析 (Next.js 15 必须步骤)
+    const params = await props.params;
+
     // params.path 是数组，例如 ['my-image.png'] 或者 ['subdir', 'image.png']
-    // Obsidian 通常是扁平引用 [[image.png]]，但也可能带路径
     const filename = params.path[params.path.length - 1];
 
     // 安全检查：防止遍历上级目录
-    if (filename.includes("..") || params.path.some(p => p.includes(".."))) {
+    if (filename.includes("..") || params.path.some((p) => p.includes(".."))) {
         return new NextResponse("Invalid path", { status: 400 });
     }
 
     const NOTES_DIR = path.join(process.cwd(), "content");
 
     // 在 content 目录下递归查找该文件
-    // 注意：如果不同文件夹有同名图片，这里会返回找到的第一个。
-    // 如果你的图片引用带有路径（如 [[assets/img.png]]），逻辑需要调整。
-    // 这里假设是标准的 Obsidian 扁平引用。
     const filePath = findFile(NOTES_DIR, filename);
 
     if (!filePath || !fs.existsSync(filePath)) {

@@ -1,4 +1,5 @@
-﻿import { memo } from "react";
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { memo } from "react";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -141,8 +142,10 @@ function remarkObsidianCallout() {
  * Markdown 组件 (使用 React.memo 避免不必要的重渲染)
  */
 export const Markdown = memo(function Markdown({ source }: { source: string }) {
-    // 使用 processSync 进行同步处理（适合服务端组件或简单的客户端渲染）
-    // 注意：在非常大的文档上，如果需要不阻塞 UI，建议后续改用异步处理 useEffect
+    // 关键修改：将处理逻辑和渲染逻辑分离，避免在 try/catch 中直接 return JSX
+    let contentHtml = "";
+    let error = null;
+
     try {
         const file = unified()
             .use(remarkParse)
@@ -157,16 +160,14 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
             .use(rehypeStringify)
             .processSync(source);
 
-        return (
-            <article
-                className="prose prose-neutral max-w-none dark:prose-invert"
-                // 针对长文档的渲染优化 CSS
-                style={{ contentVisibility: "auto", containIntrinsicSize: "1000px" } as any}
-                dangerouslySetInnerHTML={{ __html: String(file) }}
-            />
-        );
+        contentHtml = String(file);
     } catch (err) {
         console.error("Markdown rendering error:", err);
+        error = err;
+    }
+
+    // 如果出错，渲染错误信息
+    if (error) {
         return (
             <div className="p-4 border border-red-500 text-red-500 rounded">
                 渲染错误: 原始内容无法解析
@@ -174,4 +175,14 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
             </div>
         );
     }
+
+    // 正常渲染
+    return (
+        <article
+            className="prose prose-neutral max-w-none dark:prose-invert"
+            // 针对长文档的渲染优化 CSS
+            style={{ contentVisibility: "auto", containIntrinsicSize: "1000px" } as any}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
+        />
+    );
 });

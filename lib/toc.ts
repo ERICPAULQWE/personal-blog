@@ -1,4 +1,5 @@
-﻿// lib/toc.ts
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+// lib/toc.ts
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import { visit } from "unist-util-visit";

@@ -5,8 +5,17 @@ export function generateStaticParams() {
     return getAllTags().map(({ tag }) => ({ tag }));
 }
 
-export default function TagDetailPage({ params }: { params: { tag: string } }) {
-    const decoded = decodeURIComponent(params.tag);
+// 修改点 1: 组件改为 async
+// 修改点 2: params 类型改为 Promise
+export default async function TagDetailPage({
+    params
+}: {
+    params: Promise<{ tag: string }>
+}) {
+    // 修改点 3: 必须先 await params 才能获取 tag
+    const { tag } = await params;
+
+    const decoded = decodeURIComponent(tag);
     const notes = getNotesByTag(decoded);
 
     return (
