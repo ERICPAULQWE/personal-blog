@@ -117,3 +117,13 @@ export function groupNotesByMonth() {
     // 分组 key 倒序（最新月份在上）
     return Array.from(groups.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
 }
+
+const LABS_MD_DIR = path.join(ROOT, "content", "labs");
+
+export function getLabDoc(slug: string) {
+    const fp = path.join(LABS_MD_DIR, `${slug}.md`);
+    if (!fs.existsSync(fp)) return null;
+    const raw = fs.readFileSync(fp, "utf-8");
+    const { data, content } = matter(raw);
+    return { frontmatter: data as Frontmatter, content };
+}
