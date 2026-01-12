@@ -13,6 +13,7 @@ const nav = [
     { href: "/tags", label: "Tags" },
     { href: "/archive", label: "Archive" },
     { href: "/about", label: "About" },
+    { href: "/search", label: "Search" },
 ];
 
 export function SiteHeader() {
