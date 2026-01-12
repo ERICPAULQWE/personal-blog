@@ -97,3 +97,23 @@ export function getNotesByTag(tag: string) {
         (n.frontmatter.tags ?? []).some((t) => String(t).toLowerCase() === target)
     );
 }
+
+export function groupNotesByMonth() {
+    const notes = getAllNotes();
+    const groups = new Map<string, Note[]>();
+
+    for (const n of notes) {
+        const ym = (n.frontmatter.date || "").slice(0, 7); // YYYY-MM
+        const key = ym && ym.length === 7 ? ym : "Unknown";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(n);
+    }
+
+    // 每个分组内按日期倒序
+    for (const [, arr] of groups) {
+        arr.sort((a, b) => (a.frontmatter.date < b.frontmatter.date ? 1 : -1));
+    }
+
+    // 分组 key 倒序（最新月份在上）
+    return Array.from(groups.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
+}
