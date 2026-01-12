@@ -12,13 +12,20 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.26.1",
     "gray-matter": "^4.0.3",
+    "katex": "^0.16.27",
     "lucide-react": "^0.562.0",
     "marked": "^17.0.1",
     "next": "15.2.3",
     "next-themes": "^0.4.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "tailwind-merge": "^3.4.0"
+    "rehype-katex": "^7.0.1",
+    "rehype-stringify": "^10.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "tailwind-merge": "^3.4.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -1,18 +1,28 @@
-﻿import { marked } from "marked";
+﻿import rehypeKatex from "rehype-katex";
+import rehypeStringify from "rehype-stringify";
+import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
 
-// 安全/稳定优先：这里只做最基础渲染，不启用危险 HTML
-marked.setOptions({
-    gfm: true,
-    breaks: false,
-});
-
-export function Markdown({ source }: { source: string }) {
-    const html = marked.parse(source) as string;
+/**
+ * Stable Markdown renderer with LaTeX support (Obsidian style):
+ * - inline: $...$
+ * - block:  $$...$$
+ */
+export async function Markdown({ source }: { source: string }) {
+    const file = await unified()
+        .use(remarkParse)
+        .use(remarkMath)
+        .use(remarkRehype, { allowDangerousHtml: false })
+        .use(rehypeKatex)
+        .use(rehypeStringify)
+        .process(source);
 
     return (
         <article
             className="prose prose-neutral max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: html }}
+            dangerouslySetInnerHTML={{ __html: String(file) }}
         />
     );
 }
