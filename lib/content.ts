@@ -71,3 +71,29 @@ export function getNoteBySlug(slug: string): Note | null {
         content,
     };
 }
+
+export function getAllTags() {
+    const notes = getAllNotes();
+    const map = new Map<string, number>();
+
+    for (const n of notes) {
+        const tags = n.frontmatter.tags ?? [];
+        for (const t of tags) {
+            const key = String(t).trim();
+            if (!key) continue;
+            map.set(key, (map.get(key) ?? 0) + 1);
+        }
+    }
+
+    return Array.from(map.entries())
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+export function getNotesByTag(tag: string) {
+    const notes = getAllNotes();
+    const target = tag.toLowerCase();
+    return notes.filter((n) =>
+        (n.frontmatter.tags ?? []).some((t) => String(t).toLowerCase() === target)
+    );
+}
