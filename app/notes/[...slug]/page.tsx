@@ -7,13 +7,20 @@ export function generateStaticParams() {
     return notes.map((n) => ({ slug: n.slug.split("/") }));
 }
 
-export default function NoteDetailPage({
+// 修复点 1: 组件改为 async，因为 Next.js 15 中 params 是 Promise
+export default async function NoteDetailPage({
     params,
 }: {
-    params: { slug: string[] };
+    params: Promise<{ slug: string[] }>; // 类型定义更新
 }) {
-    const slug = params.slug.join("/");
-    const note = getNoteBySlug(slug);
+    // 修复点 1: 等待 params 解析
+    const { slug } = await params;
+
+    // 修复点 2: 对 URL 进行解码 (处理中文和空格)
+    // 例如: ['%E7%AC%AC3%E7%AB%A0'] -> ['第3章']
+    const decodedSlug = slug.map((s) => decodeURIComponent(s)).join("/");
+
+    const note = getNoteBySlug(decodedSlug);
 
     if (!note) return notFound();
 

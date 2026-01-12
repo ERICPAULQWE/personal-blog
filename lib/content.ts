@@ -115,7 +115,12 @@ export function groupNotesByMonth() {
     }
 
     // 分组 key 倒序（最新月份在上）
-    return Array.from(groups.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
+    // 修改：明确取出数组的第一项（Key）进行比较，避免解构参数带来的类型推断失败
+    return Array.from(groups.entries()).sort((a, b) => {
+        const dateA = a[0];
+        const dateB = b[0];
+        return dateA < dateB ? 1 : -1;
+    });
 }
 
 const LABS_MD_DIR = path.join(ROOT, "content", "labs");
