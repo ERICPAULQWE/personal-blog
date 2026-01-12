@@ -48,3 +48,170 @@ html.dark .prose-base {
 html.dark ::selection {
     background: rgba(64, 64, 64, 0.6);
 }
+
+/* =========================================
+   Obsidian Callout (警告块) 样式支持
+   ========================================= */
+
+/* 基础 Callout 容器 */
+.callout {
+    border: 1px solid var(--border, #e5e7eb);
+    border-left-width: 4px;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: var(--callout-bg, rgba(128, 128, 128, 0.05));
+    overflow: hidden; /* 防止内容溢出圆角 */
+}
+
+/* 深色模式下的边框适配 */
+html.dark .callout {
+    border-color: #262626; /* neutral-800 */
+}
+
+/* --- Callout 标题 --- */
+.callout-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: inherit;
+    /* 如果是可折叠的 (details/summary)，添加鼠标手势 */
+    cursor: pointer;
+}
+
+/* 修复 details/summary 的默认箭头，通常 Obsidian 风格不使用默认的小三角，或者自定义 */
+details.callout > summary {
+    list-style: none;
+    margin: -1rem -1rem 0 -1rem; /* 抵消 padding，让标题占满顶部 */
+    padding: 1rem;
+    outline: none;
+}
+
+    details.callout > summary::-webkit-details-marker {
+        display: none;
+    }
+
+/* 展开时的内容间距 */
+details.callout[open] .callout-content {
+    margin-top: 1rem;
+}
+
+/* --- Callout 内容 --- */
+.callout-content p {
+    margin: 0; /* 移除内容中段落的默认外边距，避免双重间距 */
+}
+
+    .callout-content p + p {
+        margin-top: 1em; /* 段落之间保持间距 */
+    }
+
+/* =========================================
+   各类型 Callout 颜色定义
+   ========================================= */
+
+/* 1. 默认/笔记 (Note, Abstract, Summary, TLDR) - 蓝色 */
+.callout[data-callout="note"],
+.callout[data-callout="abstract"],
+.callout[data-callout="summary"],
+.callout[data-callout="tldr"],
+.callout[data-callout="info"] {
+    border-left-color: #3b82f6; /* blue-500 */
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+    .callout[data-callout="note"] .callout-title,
+    .callout[data-callout="info"] .callout-title {
+        color: #2563eb; /* blue-600 */
+    }
+
+html.dark .callout[data-callout="note"] .callout-title,
+html.dark .callout[data-callout="info"] .callout-title {
+    color: #60a5fa; /* blue-400 */
+}
+
+/* 2. 提示/成功 (Tip, Hint, Important, Success, Check, Done) - 绿色 */
+.callout[data-callout="tip"],
+.callout[data-callout="hint"],
+.callout[data-callout="important"],
+.callout[data-callout="success"],
+.callout[data-callout="check"],
+.callout[data-callout="done"] {
+    border-left-color: #10b981; /* emerald-500 */
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+    .callout[data-callout="tip"] .callout-title,
+    .callout[data-callout="success"] .callout-title {
+        color: #059669; /* emerald-600 */
+    }
+
+html.dark .callout[data-callout="tip"] .callout-title,
+html.dark .callout[data-callout="success"] .callout-title {
+    color: #34d399; /* emerald-400 */
+}
+
+/* 3. 警告 (Warning, Caution, Attention) - 橙色 */
+.callout[data-callout="warning"],
+.callout[data-callout="caution"],
+.callout[data-callout="attention"] {
+    border-left-color: #f59e0b; /* amber-500 */
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+    .callout[data-callout="warning"] .callout-title {
+        color: #d97706; /* amber-600 */
+    }
+
+html.dark .callout[data-callout="warning"] .callout-title {
+    color: #fbbf24; /* amber-400 */
+}
+
+/* 4. 错误/危险 (Failure, Fail, Missing, Danger, Error) - 红色 */
+.callout[data-callout="failure"],
+.callout[data-callout="fail"],
+.callout[data-callout="missing"],
+.callout[data-callout="danger"],
+.callout[data-callout="error"],
+.callout[data-callout="bug"] {
+    border-left-color: #ef4444; /* red-500 */
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+    .callout[data-callout="failure"] .callout-title,
+    .callout[data-callout="error"] .callout-title {
+        color: #dc2626; /* red-600 */
+    }
+
+html.dark .callout[data-callout="failure"] .callout-title,
+html.dark .callout[data-callout="error"] .callout-title {
+    color: #f87171; /* red-400 */
+}
+
+/* 5. 示例/引用 (Example, Quote) - 紫色/灰色 */
+.callout[data-callout="example"] {
+    border-left-color: #8b5cf6; /* violet-500 */
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+.callout[data-callout="quote"] {
+    border-left-color: #9ca3af; /* gray-400 */
+    background-color: rgba(156, 163, 175, 0.1);
+}
+
+/* 6. 自定义：Figure (图片说明) - 紫色 */
+.callout[data-callout="figure"] {
+    border-left-color: #7c3aed; /* violet-600 */
+    background-color: rgba(124, 58, 237, 0.05);
+}
+
+    .callout[data-callout="figure"] .callout-title {
+        color: #6d28d9; /* violet-700 */
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+html.dark .callout[data-callout="figure"] .callout-title {
+    color: #a78bfa; /* violet-400 */
+}
