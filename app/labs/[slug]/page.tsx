@@ -15,11 +15,12 @@ function LabComponent({ slug }: { slug: string }) {
     return null;
 }
 
-export default function LabDetailPage({ params }: { params: { slug: string } }) {
+// Next.js 15: params 必须声明为 Promise 并使用 await 解析
+export default async function LabDetailPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
     const meta = labs.find((l) => l.slug === params.slug);
 
     if (!meta) {
-        // 这会让你确认是不是 registry 没匹配到
         return notFound();
     }
 
@@ -53,7 +54,7 @@ export default function LabDetailPage({ params }: { params: { slug: string } }) 
                     <h2 className="text-sm font-semibold tracking-wide text-neutral-600 dark:text-neutral-400">
                         NOTES
                     </h2>
-                    {/* @ts-expect-error Async Server Component */}
+                    {/* 修复：删除了多余的 @ts-expect-error 指令，因为 Markdown 组件现在是正常的同步组件 */}
                     <Markdown source={doc.content} />
                 </section>
             ) : null}
