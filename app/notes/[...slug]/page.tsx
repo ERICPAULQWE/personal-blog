@@ -6,9 +6,13 @@ import { buildFileTree } from "../../../lib/tree";
 import { NotesLayoutClient } from "../../../components/notes-layout-client";
 import { Calendar, User } from "lucide-react";
 
+// 生成静态路径 (SSG)
 export function generateStaticParams() {
     const notes = getAllNotes();
-    return notes.map((n) => ({ slug: n.slug.split("/") }));
+    return notes.map((note) => ({
+        // 这里的 split 确保总是返回数组，符合 [...slug] 的要求
+        slug: note.slug.split("/"),
+    }));
 }
 
 export default async function NoteDetailPage({
@@ -17,6 +21,7 @@ export default async function NoteDetailPage({
     params: Promise<{ slug: string[] }>;
 }) {
     const { slug } = await params;
+    // 将 URL 数组还原为文件路径字符串 (例如 ["ai", "llm"] -> "ai/llm")
     const decodedSlug = slug.map((s) => decodeURIComponent(s)).join("/");
     const note = getNoteBySlug(decodedSlug);
 
@@ -29,6 +34,7 @@ export default async function NoteDetailPage({
     return (
         <NotesLayoutClient tree={tree} toc={toc}>
             <div className="space-y-12 pb-20">
+                {/* 文章头部信息 */}
                 <header className="space-y-6 border-b border-neutral-100 dark:border-neutral-800 pb-8">
                     <h1 className="text-4xl font-bold tracking-tight md:text-5xl leading-tight text-neutral-900 dark:text-white antialiased">
                         {note.frontmatter.title}
@@ -39,6 +45,7 @@ export default async function NoteDetailPage({
                             <Calendar className="h-4 w-4 opacity-70" />
                             {note.frontmatter.date}
                         </div>
+                        {/* 你可以在这里从 metadata 读取作者，或者写死 */}
                         <div className="flex items-center gap-1.5">
                             <User className="h-4 w-4 opacity-70" />
                             Ericpaulqwe
@@ -54,6 +61,7 @@ export default async function NoteDetailPage({
                     )}
                 </header>
 
+                {/* Markdown 正文渲染 */}
                 <section>
                     <Markdown source={note.content} />
                 </section>
