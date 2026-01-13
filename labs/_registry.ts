@@ -20,13 +20,12 @@ export const labs: Lab[] = [
     },
     {
          slug: "fire-calculator",
-         title: "FIRE 计算器",
+         title: "财富自由计算器",
          description: "纯 React 构建的交互式计算工具。",
          date: "2026-01-14",
          tags: ["Tool", "Finance"],
          fullScreen: true, // 开启全屏模式
     },
-
     {
         slug: "wechat-sim",
         title: "微信聊天记录生成器",
@@ -34,5 +33,21 @@ export const labs: Lab[] = [
         date: "2026-01-13",
         tags: ["React", "工具", "仿真"],
         fullScreen: true,
+    },
+    {
+        slug: "fourier-playground",
+        title: "傅里叶变换视觉实验室",
+        description: "集成谐波合成器、音频引擎与高级滤波器的全能 DSP 实验平台。",
+        date: "2026-01-14",
+        tags: ["DSP", "Visualization", "Canvas", "Audio"],
+        fullScreen: true, // 必须为 true 以启用全屏布局
+    },
+    {
+        slug: "z-transform-viz",
+        title: "Z-变换交互单位圆",
+        description: "可视化探索系统稳定性与零极点对频域特性的影响。",
+        date: "2026-01-14",
+        tags: ["DSP", "Math", "Interactive"],
+        fullScreen: false, // 混合模式
     },
 ];
