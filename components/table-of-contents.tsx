@@ -48,12 +48,12 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
 
     return (
         <div className={cn(
-            "glass rounded-[2rem] p-3 shadow-sm border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden transition-all duration-500",
+            "glass rounded-[2rem] p-3 shadow-sm border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden transition-all duration-500 flex flex-col",
             isCollapsed ? "h-12 w-12" : "h-auto max-h-[70vh] w-64"
         )}>
-            {/* 顶部控制栏 */}
+            {/* 顶部控制栏 - 添加 shrink-0 防止被压缩 */}
             <div className={cn(
-                "flex items-center justify-between transition-all",
+                "flex items-center justify-between transition-all shrink-0",
                 !isCollapsed && "mb-4 px-2"
             )}>
                 {!isCollapsed && (
@@ -72,10 +72,10 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
                 </button>
             </div>
 
-            {/* 列表内容区域 */}
+            {/* 列表内容区域 - 核心修复：使用 flex-1 min-h-0 实现内部滚动 */}
             <div className={cn(
                 "transition-all duration-500 custom-scrollbar overflow-y-auto",
-                isCollapsed ? "opacity-0 h-0 pointer-events-none" : "opacity-100 h-auto"
+                isCollapsed ? "opacity-0 h-0 pointer-events-none" : "opacity-100 flex-1 min-h-0"
             )}>
                 <ul className="space-y-1.5 px-2 pb-2">
                     {items.map((item) => {
