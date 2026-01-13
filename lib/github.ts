@@ -116,3 +116,21 @@ export async function deleteRepoDirRecursive(dirPath: string) {
 
     return { deleted, skipped };
 }
+
+/**  读取单个文件内容（UTF-8） */
+export async function readRepoFile(path: string): Promise<string> {
+    const { data } = await octokit.rest.repos.getContent({
+        owner: OWNER,
+        repo: REPO,
+        path,
+        ref: BRANCH,
+    });
+
+    if (Array.isArray(data) || !("content" in data)) {
+        throw new Error("Not a file");
+    }
+
+    const encoded = (data as { content: string }).content; // base64（可能带换行）
+    const cleaned = encoded.replace(/\n/g, "");
+    return Buffer.from(cleaned, "base64").toString("utf-8");
+}

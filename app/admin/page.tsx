@@ -41,13 +41,12 @@ export default async function AdminPage() {
                     />
                     <Card
                         title="代码实验室"
-                        desc="React 组件发布 (开发中...)"
-                        href="#"
-                        disabled
+                        desc="React 组件发布（支持混合/全屏）"
+                        href="/admin/labs"
                     />
                     <Card
                         title="删除笔记"
-                        desc="删除 Markdown 文件，并清理同名资源文件夹"
+                        desc="左侧树选择笔记，一键删除 Markdown + 同名图片目录"
                         href="/admin/delete"
                     />
                     <Card
