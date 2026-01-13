@@ -5,14 +5,6 @@ description: "高保真复刻 iOS 版微信聊天界面，支持自定义头像�
 tags: ["React", "工具", "仿真"]
 ---
 
----
-title: "微信聊天记录生成器"
-date: "2026-01-14"
-description: "一款高保真的微信对话模拟工具，适用于内容创作、排版及 UI 测试。"
-tags: ["React", "Next.js", "工具"]
-status: "published"
----
-
 ## 功能特性
 
 - **iOS 原生还原**：像素级复刻 iOS 微信 UI，包括气泡比例、间距、导航栏和状态栏。
