@@ -26,4 +26,13 @@ export const labs: Lab[] = [
          tags: ["Tool", "Finance"],
          fullScreen: true, // 开启全屏模式
     },
+
+    {
+        slug: "wechat-sim",
+        title: "微信聊天记录生成器",
+        description: "高保真复刻 iOS 版微信聊天界面，支持自定义头像、文字、图片及高清长图导出。",
+        date: "2026-01-13",
+        tags: ["React", "工具", "仿真"],
+        fullScreen: true,
+    },
 ];
