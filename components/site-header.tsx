@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Moon, Sun, Search } from "lucide-react";
+import { Moon, Sun, Search, Lock, TerminalSquare } from "lucide-react"; // 新增图标
 import { useTheme } from "next-themes";
 import { cn } from "../lib/utils";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react"; // 新增 Hook
 
 const nav = [
     { href: "/", label: "Home" },
@@ -21,6 +22,9 @@ export function SiteHeader() {
     const { theme, setTheme } = useTheme();
     const [scrolled, setScrolled] = useState(false);
 
+    // 新增：获取登录状态
+    const { data: session } = useSession();
+
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
@@ -35,7 +39,7 @@ export function SiteHeader() {
             )}
         >
             <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
-                {/* Logo 部分 */}
+                {/* Logo 部分 (保持不变) */}
                 <Link
                     href="/"
                     className="group flex items-center gap-2 font-bold tracking-tight text-lg"
@@ -48,7 +52,7 @@ export function SiteHeader() {
                     </span>
                 </Link>
 
-                {/* 悬浮灵动岛导航中心 */}
+                {/* 悬浮灵动岛导航中心 (保持不变) */}
                 <nav className="glass flex items-center gap-1 rounded-full px-2 py-1.5 shadow-sm">
                     {nav.map((item) => {
                         const active = pathname === item.href;
@@ -71,9 +75,29 @@ export function SiteHeader() {
                     })}
                 </nav>
 
-                {/* 右侧功能区：搜索 + 主题切换 */}
+                {/* 右侧功能区：新增 Admin -> 搜索 -> 主题 */}
                 <div className="flex items-center gap-2">
-                    {/* 搜索按钮 - 新增 */}
+                    {/* --- 新增：登录/控制台按钮 --- */}
+                    {/* 样式完全复用 Search 按钮的样式，保持统一 */}
+                    {session ? (
+                        <Link
+                            href="/admin"
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
+                            title="控制台"
+                        >
+                            <TerminalSquare className="h-[18px] w-[18px] text-neutral-500 dark:text-neutral-400" />
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/api/auth/signin"
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
+                            title="管理员登录"
+                        >
+                            <Lock className="h-[18px] w-[18px] text-neutral-500 dark:text-neutral-400" />
+                        </Link>
+                    )}
+
+                    {/* 搜索按钮 (保持不变) */}
                     <Link
                         href="/search"
                         className={cn(
@@ -85,7 +109,7 @@ export function SiteHeader() {
                         <Search className="h-[18px] w-[18px] text-neutral-500 dark:text-neutral-400" />
                     </Link>
 
-                    {/* 主题切换按钮 */}
+                    {/* 主题切换按钮 (保持不变) */}
                     <button
                         type="button"
                         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}

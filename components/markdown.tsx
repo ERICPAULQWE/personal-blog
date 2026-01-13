@@ -12,52 +12,63 @@ import rehypeSlug from "rehype-slug";
 import { visit } from "unist-util-visit";
 
 /**
- * 处理 Obsidian 图片语法 ![[filename|width]]
+ * 核心修复：处理 Obsidian 图片语法与标准 Markdown 图片语法
+ * 兼容两种格式：
+ * 1. ![[filename.jpg|200]] (Obsidian Wiki-link)
+ * 2. ![](./path/filename.jpg|200) (带宽度的标准 Markdown)
  */
-function remarkObsidianImage() {
+function remarkSmartImage() {
     return (tree: any) => {
-        visit(tree, "text", (node: any, index: any, parent: any) => {
-            const value = node.value;
-            const regex = /!\[\[(.*?)(?:\|(.*?))?\]\]/g;
+        // 1. 处理所有图片节点（标准语法产生的）
+        visit(tree, "image", (node: any) => {
+            if (node.url && !node.url.startsWith("http")) {
+                // 如果 URL 里包含宽度管道符 |，将其拆分
+                const [cleanUrl, width] = node.url.split("|");
+                // 提取文件名（去掉前面的 ./ 或 路径）
+                const filename = cleanUrl.split("/").pop();
 
+                node.url = `/api/content/images/${encodeURIComponent(filename || "")}`;
+                node.data = node.data || {};
+                node.data.hProperties = {
+                    ...node.data.hProperties,
+                    width: width || undefined,
+                    style: width ? `width: ${width}px; height: auto;` : undefined,
+                    className: ["rounded-2xl", "shadow-sm", "my-6", "max-w-full"],
+                };
+            }
+        });
+
+        // 2. 处理文本节点（捕获 ![[...]] 语法）
+        visit(tree, "text", (node: any, index: any, parent: any) => {
+            const regex = /!\[\[(.*?)(?:\|(.*?))?\]\]/g;
             let match;
             const newNodes = [];
             let lastIndex = 0;
 
-            while ((match = regex.exec(value)) !== null) {
+            while ((match = regex.exec(node.value)) !== null) {
                 const [, filename, width] = match;
                 if (match.index > lastIndex) {
-                    newNodes.push({
-                        type: "text",
-                        value: value.slice(lastIndex, match.index),
-                    });
+                    newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) });
                 }
 
-                const imageNode = {
+                newNodes.push({
                     type: "image",
                     url: `/api/content/images/${encodeURIComponent(filename)}`,
                     alt: filename,
                     data: {
                         hProperties: {
-                            width: width ? width : undefined,
-                            loading: "lazy",
-                            decoding: "async",
-                            // 增加苹果风格的微圆角
-                            className: ["rounded-2xl", "shadow-sm", "my-8"],
+                            width: width || undefined,
+                            style: width ? `width: ${width}px; height: auto;` : undefined,
+                            className: ["rounded-2xl", "shadow-sm", "my-6", "max-w-full"],
                         },
                     },
-                };
-
-                newNodes.push(imageNode);
+                });
                 lastIndex = regex.lastIndex;
             }
 
-            if (newNodes.length > 0 && parent && typeof index === "number") {
-                if (lastIndex < value.length) {
-                    newNodes.push({
-                        type: "text",
-                        value: value.slice(lastIndex),
-                    });
+            if (newNodes.length > 0 && parent) {
+                if (lastIndex < node.value.length) {
+                    newNodes.push({ type: "text", value: node.value.slice(lastIndex) });
                 }
                 parent.children.splice(index, 1, ...newNodes);
                 return index + newNodes.length;
@@ -67,14 +78,14 @@ function remarkObsidianImage() {
 }
 
 /**
- * 处理 Obsidian Callout 语法
+ * 处理 Obsidian Callout 语法 (保持不变)
  */
 function remarkObsidianCallout() {
     return (tree: any) => {
         visit(tree, "blockquote", (node: any) => {
-            if (!node.children || node.children.length === 0) return;
+            if (!node.children?.length) return;
             const firstChild = node.children[0];
-            if (firstChild.type !== "paragraph" || !firstChild.children || firstChild.children.length === 0) return;
+            if (firstChild.type !== "paragraph" || !firstChild.children?.length) return;
             const firstTextNode = firstChild.children[0];
             if (firstTextNode.type !== "text") return;
 
@@ -82,28 +93,8 @@ function remarkObsidianCallout() {
             if (match) {
                 const [fullMatch, type, collapse, titleText] = match;
                 const isCollapsible = !!collapse;
-                const defaultOpen = collapse !== "-";
                 const title = titleText || type.charAt(0).toUpperCase() + type.slice(1);
-
                 firstTextNode.value = firstTextNode.value.slice(fullMatch.length);
-
-                const titleNode = {
-                    type: "element",
-                    data: {
-                        hName: isCollapsible ? "summary" : "div",
-                        hProperties: { className: ["callout-title"] },
-                    },
-                    children: [{ type: "text", value: title }],
-                };
-
-                const contentNode = {
-                    type: "element",
-                    data: {
-                        hName: "div",
-                        hProperties: { className: ["callout-content"] },
-                    },
-                    children: [...node.children],
-                };
 
                 node.type = "element";
                 node.data = {
@@ -111,10 +102,13 @@ function remarkObsidianCallout() {
                     hProperties: {
                         className: ["callout"],
                         "data-callout": type.toLowerCase(),
-                        open: isCollapsible && defaultOpen ? true : undefined,
+                        open: collapse !== "-"
                     },
                 };
-                node.children = [titleNode, contentNode];
+                node.children = [
+                    { type: "element", data: { hName: isCollapsible ? "summary" : "div", hProperties: { className: ["callout-title"] } }, children: [{ type: "text", value: title }] },
+                    { type: "element", data: { hName: "div", hProperties: { className: ["callout-content"] } }, children: [...node.children] }
+                ];
             }
         });
     };
@@ -122,14 +116,12 @@ function remarkObsidianCallout() {
 
 export const Markdown = memo(function Markdown({ source }: { source: string }) {
     let contentHtml = "";
-    let error = null;
-
     try {
         const file = unified()
             .use(remarkParse)
             .use(remarkGfm)
             .use(remarkMath)
-            .use(remarkObsidianImage)
+            .use(remarkSmartImage) // 使用强化版图片插件
             .use(remarkObsidianCallout)
             .use(remarkRehype, { allowDangerousHtml: true })
             .use(rehypeRaw)
@@ -141,32 +133,12 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
         contentHtml = String(file);
     } catch (err) {
         console.error("Markdown rendering error:", err);
-        error = err;
-    }
-
-    if (error) {
-        return (
-            <div className="p-4 border border-red-500 text-red-500 rounded-2xl glass">
-                渲染错误: 原始内容无法解析
-                <pre className="mt-2 text-xs overflow-auto">{source}</pre>
-            </div>
-        );
     }
 
     return (
         <article
-            /* 关键优化：
-               1. 使用 prose-base 对应我们在 globals.css 中的高对比度白色定义
-               2. 去掉 prose-neutral，使用我们自定义的纯净色彩
-               3. 增加 antialiased 确保在苹果设备上字体渲染最纤细美观
-            */
-            className="prose prose-base dark:prose-invert max-w-none antialiased selection:bg-blue-500/30"
-            style={{
-                contentVisibility: "auto",
-                containIntrinsicSize: "1000px",
-                // 优化行高，增加呼吸感
-                lineHeight: '1.8'
-            } as any}
+            className="prose prose-base dark:prose-invert max-w-none antialiased"
+            style={{ lineHeight: '1.8' } as any}
             dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
     );
