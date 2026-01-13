@@ -2,7 +2,9 @@
 import { getAllNotes, getNoteBySlug } from "../../../lib/content";
 import { Markdown } from "../../../components/markdown";
 import { getTableOfContents } from "../../../lib/toc";
-import { TableOfContents } from "../../../components/table-of-contents";
+import { buildFileTree } from "../../../lib/tree";
+import { NotesLayoutClient } from "../../../components/notes-layout-client";
+import { Calendar, User } from "lucide-react";
 
 export function generateStaticParams() {
     const notes = getAllNotes();
@@ -20,53 +22,48 @@ export default async function NoteDetailPage({
 
     if (!note) return notFound();
 
-    // 获取目录数据
+    const allNotes = getAllNotes();
+    const tree = buildFileTree(allNotes);
     const toc = await getTableOfContents(note.content);
 
     return (
-        // 修改点：删除了 "items-start"
-        // 这会让 aside 高度自动拉伸 (stretch) 到和 main 一样高，从而让 sticky 生效
-        <div className="relative flex w-full max-w-[90rem] mx-auto gap-6 px-4 sm:px-6 lg:gap-10 py-8">
+        <NotesLayoutClient tree={tree} toc={toc}>
+            <div className="space-y-12 pb-20">
+                <header className="space-y-6 border-b border-neutral-100 dark:border-neutral-800 pb-8">
+                    <h1 className="text-4xl font-bold tracking-tight md:text-5xl leading-tight text-neutral-900 dark:text-white antialiased">
+                        {note.frontmatter.title}
+                    </h1>
 
-            {/* 文章主体区域 
-               flex-1: 占据剩余空间
-               min-w-0: 防止代码块等宽元素撑破 flex 布局
-            */}
-            <main className="flex-1 min-w-0">
-                {/* 文章内部限制宽度，保持最佳阅读体验 (max-w-3xl 约 768px) */}
-                <div className="mx-auto max-w-3xl space-y-8">
-                    <header className="space-y-3">
-                        <h1 className="text-3xl font-semibold tracking-tight">
-                            {note.frontmatter.title}
-                        </h1>
-                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                        <div className="flex items-center gap-1.5">
+                            <Calendar className="h-4 w-4 opacity-70" />
                             {note.frontmatter.date}
                         </div>
-                        {note.frontmatter.description ? (
-                            <p className="prose-base text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                            <User className="h-4 w-4 opacity-70" />
+                            Ericpaulqwe
+                        </div>
+                    </div>
+
+                    {note.frontmatter.description && (
+                        <div className="relative pl-4 border-l-4 border-blue-500/20">
+                            <p className="text-lg text-neutral-600 dark:text-neutral-300 italic">
                                 {note.frontmatter.description}
                             </p>
-                        ) : null}
-                    </header>
+                        </div>
+                    )}
+                </header>
 
+                <section>
                     <Markdown source={note.content} />
-                </div>
-            </main>
+                </section>
 
-            {/* 右侧大纲容器 
-               hidden xl:block: 只在 XL (1280px+) 屏幕显示
-               shrink-0: 防止被文章挤压
-               relative: 作为定位参考（虽然 sticky 是基于视口的，但保持结构清晰）
-               注意：因为父级去掉了 items-start，这个 aside 现在高度是 100%
-            */}
-            <aside className="hidden xl:block shrink-0 relative">
-                <TableOfContents toc={toc} />
-            </aside>
-
-            {/* 移动端/小屏幕下的处理 */}
-            <div className="xl:hidden">
-                {/* <TableOfContents toc={toc} /> */}
+                <footer className="pt-8 border-t border-neutral-100 dark:border-neutral-800">
+                    <p className="text-sm text-neutral-400">
+                        最后编辑于 {note.frontmatter.date}
+                    </p>
+                </footer>
             </div>
-        </div>
+        </NotesLayoutClient>
     );
 }

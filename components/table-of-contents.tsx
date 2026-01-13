@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronRight, List } from "lucide-react"; // 删除了 ChevronLeft
+import { List, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface TocItem {
     title: string;
@@ -13,14 +13,12 @@ interface TocItem {
 
 interface TableOfContentsProps {
     toc: TocItem[];
+    isCollapsed: boolean;      // 改为外部传入
+    onToggle: () => void;     // 改为外部传入
 }
 
-export function TableOfContents({ toc = [] }: TableOfContentsProps) {
+export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfContentsProps) {
     const [activeId, setActiveId] = useState<string>("");
-    const [isCollapsed, setIsCollapsed] = useState(false);
-
-    // 修复警告：使用 useMemo 缓存 items，虽然 toc 本身变化时 items 也会变，
-    // 但这样符合 ESLint 规范，明确了依赖关系
     const items = useMemo(() => toc || [], [toc]);
 
     useEffect(() => {
@@ -38,74 +36,78 @@ export function TableOfContents({ toc = [] }: TableOfContentsProps) {
         );
 
         items.forEach((item) => {
-            if (!item.url) return;
             const id = item.url.replace(/^#/, "");
-            if (!id) return;
             const element = document.getElementById(id);
             if (element) observer.observe(element);
         });
 
         return () => observer.disconnect();
-    }, [items]); // 这里的依赖现在是安全的
+    }, [items]);
 
     if (items.length === 0) return null;
 
     return (
-        <nav
-            className={cn(
-                "sticky top-24 max-h-[80vh] flex flex-col transition-all duration-300 ease-in-out",
-                isCollapsed ? "w-10" : "w-64"
-            )}
-        >
-            <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="mb-4 p-2 rounded-md hover:bg-accent text-muted-foreground transition-colors self-end"
-                title={isCollapsed ? "展开目录" : "折叠目录"}
-            >
-                {isCollapsed ? <List size={20} /> : <ChevronRight size={20} />}
-            </button>
-
-            <div
-                className={cn(
-                    "overflow-y-auto w-full custom-scrollbar transition-opacity duration-300",
-                    isCollapsed ? "opacity-0 pointer-events-none h-0" : "opacity-100 h-auto"
-                )}
-            >
+        <div className={cn(
+            "glass rounded-[2rem] p-3 shadow-sm border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden transition-all duration-500",
+            isCollapsed ? "h-12 w-12" : "h-auto max-h-[70vh] w-64"
+        )}>
+            {/* 顶部控制栏 */}
+            <div className={cn(
+                "flex items-center justify-between transition-all",
+                !isCollapsed && "mb-4 px-2"
+            )}>
                 {!isCollapsed && (
-                    <>
-                        <p className="font-medium text-lg mb-4 px-1">大纲</p>
-                        <ul className="space-y-2 text-sm pb-4">
-                            {items.map((item) => (
-                                <li
-                                    key={item.url}
-                                    style={{ paddingLeft: `${Math.max(0, item.depth - 2) * 1}rem` }}
-                                >
-                                    <a
-                                        href={item.url}
-                                        className={cn(
-                                            "block transition-colors hover:text-foreground line-clamp-1 py-1",
-                                            activeId === item.url.replace(/^#/, "")
-                                                ? "text-foreground font-medium border-l-2 border-primary pl-2 -ml-2"
-                                                : "text-muted-foreground"
-                                        )}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            const targetId = item.url.replace(/^#/, "");
-                                            const element = document.getElementById(targetId);
-                                            if (element) {
-                                                element.scrollIntoView({ behavior: "smooth", block: "start" });
-                                                setActiveId(targetId);
-                                            }
-                                        }}
-                                    >
-                                        {item.title}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
+                    <div className="flex items-center gap-2 text-neutral-900 dark:text-neutral-100 animate-in fade-in duration-500">
+                        <List size={14} className="text-blue-500" />
+                        <span className="font-bold text-[10px] uppercase tracking-tighter">目录大纲</span>
+                    </div>
                 )}
+
+                <button
+                    onClick={onToggle}
+                    className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 transition-colors"
+                    title={isCollapsed ? "展开" : "收起"}
+                >
+                    {isCollapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                </button>
             </div>
-        </nav>
+
+            {/* 列表内容区域 */}
+            <div className={cn(
+                "transition-all duration-500 custom-scrollbar overflow-y-auto",
+                isCollapsed ? "opacity-0 h-0 pointer-events-none" : "opacity-100 h-auto"
+            )}>
+                <ul className="space-y-1.5 px-2 pb-2">
+                    {items.map((item) => {
+                        const isActive = activeId === item.url.replace(/^#/, "");
+                        return (
+                            <li
+                                key={item.url}
+                                style={{ paddingLeft: `${Math.max(0, item.depth - 2) * 0.75}rem` }}
+                            >
+                                <a
+                                    href={item.url}
+                                    className={cn(
+                                        "group relative flex items-center py-1 text-[11px] transition-all duration-200",
+                                        isActive
+                                            ? "text-blue-600 dark:text-blue-400 font-bold"
+                                            : "text-neutral-500 hover:text-black dark:hover:text-white"
+                                    )}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        document.getElementById(item.url.replace(/^#/, ""))?.scrollIntoView({ behavior: "smooth" });
+                                    }}
+                                >
+                                    {isActive && (
+                                        <div className="absolute -left-3 h-1 w-1 rounded-full bg-blue-500" />
+                                    )}
+                                    <span className="line-clamp-2 leading-snug">{item.title}</span>
+                                </a>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+        </div>
     );
 }

@@ -1,14 +1,9 @@
-﻿import { getAllNotes } from "../../lib/content";
-import { buildFileTree } from "../../lib/tree";
-import { NotesLayoutClient } from "../../components/notes-layout-client";
-
-export default function NotesLayout({
+﻿export default function NotesLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const notes = getAllNotes();
-    const tree = buildFileTree(notes);
-
-    return <NotesLayoutClient tree={tree}>{children}</NotesLayoutClient>;
+    // 移除这里的 NotesLayoutClient 和 buildFileTree
+    // 仅作为一个纯粹的容器返回 children
+    return <>{children}</>;
 }

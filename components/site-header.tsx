@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "../lib/utils";
+import { useEffect, useState } from "react";
 
 const nav = [
     { href: "/", label: "Home" },
@@ -13,21 +14,42 @@ const nav = [
     { href: "/tags", label: "Tags" },
     { href: "/archive", label: "Archive" },
     { href: "/about", label: "About" },
-    { href: "/search", label: "Search" },
 ];
 
 export function SiteHeader() {
     const pathname = usePathname();
     const { theme, setTheme } = useTheme();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     return (
-        <header className="sticky top-0 z-50 border-b border-neutral-200/60 bg-white/70 backdrop-blur dark:border-neutral-800/60 dark:bg-neutral-950/60">
-            <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-                <Link href="/" className="font-semibold tracking-tight">
-                    ERIC&apos;s Notes
+        <header
+            className={cn(
+                "sticky top-0 z-50 w-full transition-all duration-300",
+                scrolled ? "py-3" : "py-5"
+            )}
+        >
+            <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
+                {/* Logo 部分 */}
+                <Link
+                    href="/"
+                    className="group flex items-center gap-2 font-bold tracking-tight text-lg"
+                >
+                    <div className="h-8 w-8 rounded-lg bg-black flex items-center justify-center text-white dark:bg-white dark:text-black transition-transform group-hover:scale-110">
+                        E
+                    </div>
+                    <span className="hidden sm:inline-block text-neutral-900 dark:text-white">
+                        ERIC&apos;s Notes
+                    </span>
                 </Link>
 
-                <nav className="hidden items-center gap-1 md:flex">
+                {/* 悬浮灵动岛导航中心 */}
+                <nav className="glass flex items-center gap-1 rounded-full px-2 py-1.5 shadow-sm">
                     {nav.map((item) => {
                         const active = pathname === item.href;
                         return (
@@ -35,27 +57,45 @@ export function SiteHeader() {
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "rounded-full px-3 py-1.5 text-sm transition",
-                                    "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900",
-                                    active &&
-                                    "bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white"
+                                    "relative rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 md:text-sm",
+                                    "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white",
+                                    active && "text-neutral-900 dark:text-white"
                                 )}
                             >
+                                {active && (
+                                    <div className="absolute inset-0 -z-10 rounded-full bg-neutral-100 dark:bg-neutral-800 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" />
+                                )}
                                 {item.label}
                             </Link>
                         );
                     })}
                 </nav>
 
-                <button
-                    type="button"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="relative inline-flex items-center justify-center rounded-full border border-neutral-200 p-2 transition hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-900"
-                    aria-label="Toggle theme"
-                >
-                    <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                </button>
+                {/* 右侧功能区：搜索 + 主题切换 */}
+                <div className="flex items-center gap-2">
+                    {/* 搜索按钮 - 新增 */}
+                    <Link
+                        href="/search"
+                        className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800",
+                            pathname === "/search" && "bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700"
+                        )}
+                        aria-label="Search"
+                    >
+                        <Search className="h-[18px] w-[18px] text-neutral-500 dark:text-neutral-400" />
+                    </Link>
+
+                    {/* 主题切换按钮 */}
+                    <button
+                        type="button"
+                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
+                        aria-label="Toggle theme"
+                    >
+                        <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500" />
+                        <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-blue-400" />
+                    </button>
+                </div>
             </div>
         </header>
     );

@@ -1,18 +1,30 @@
-@import "tailwindcss";
+ï»¿@import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* =========================================
+   è§†è§‰å˜é‡å®šä¹‰ - è‹¹æžœé£Žæ ¼è‰²è°ƒ
+   ========================================= */
 :root {
-    color-scheme: light;
-    /* ¶¨ÒåÒ»Ð©»ù´¡±äÁ¿£¬·ÀÖ¹²å¼þÎ´¼ÓÔØÊ±±äÁ¿È±Ê§ */
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+    --background: #fbfbfd; /* è‹¹æžœå®˜ç½‘æ ‡å¿—æ€§çš„æµ…ç°ç™½ */
+    --foreground: #1d1d1f; /* æŽ¥è¿‘çº¯é»‘ä½†æ›´æœ‰æ·±åº¦çš„ç‚­é»‘ */
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --border: rgba(0, 0, 0, 0.08);
+    --selection: rgba(0, 125, 250, 0.2);
+    --radius: 1rem;
 }
 
 html.dark {
-    color-scheme: dark;
+    --background: #000000;
+    /* ä¿®æ”¹ï¼šå°†æ–‡å­—é¢œè‰²æå‡åˆ°çº¯ç™½ï¼Œå¢žåŠ å¯¹æ¯”åº¦ */
+    --foreground: #ffffff;
+    --card-bg: rgba(28, 28, 30, 0.7); /* Apple é»‘æš—æ¨¡å¼ä¸‹çš„æ·±ç°è‰² */
+    --border: rgba(255, 255, 255, 0.15);
+    --selection: rgba(0, 125, 250, 0.5);
 }
 
+/* =========================================
+   åŸºç¡€æ ·å¼ä¼˜åŒ–
+   ========================================= */
 html,
 body {
     height: 100%;
@@ -20,71 +32,168 @@ body {
 
 body {
     margin: 0;
-    background: #ffffff;
-    color: #111827;
+    background-color: var(--background);
+    color: var(--foreground);
+    /* è‹¹æžœç³»ç»Ÿçº§å­—ä½“æ ˆï¼Œç¡®ä¿æžä½³çš„æŽ’ç‰ˆè§†è§‰ */
+    font-family: "SF Pro Display", "SF Pro Icons", "Inter", "Helvetica Neue", "Helvetica", "Arial", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    transition: background-color 0.3s ease;
 }
 
-html.dark body {
-    background: #0a0a0a;
-    color: #fafafa;
+/* ç§»é™¤å…¨å±€é»˜è®¤é€‰æ‹©é¢œè‰²ï¼Œæ”¹ç”¨æ›´æŸ”å’Œçš„è‰²è°ƒ */
+::selection {
+    background: var(--selection);
 }
 
-/* ÐÞ¸´£ºÏÔÊ½¶¨Òå prose »ù´¡ÑùÊ½£¬È·±£²å¼þ¼ÓÔØÊ§°ÜÊ±Ò²ÄÜ¿´ */
+/* =========================================
+   é«˜çº§äº¤äº’ä¸Žè§†è§‰ç±»
+   ========================================= */
+
+/* ç£¨ç ‚çŽ»ç’ƒè´¨æ„Ÿ (Glassmorphism) */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--border);
+}
+
+/* ä¼˜åŒ– prose æ ·å¼ï¼šç¡®ä¿é»‘æš—æ¨¡å¼ä¸‹å¼ºåˆ¶ä½¿ç”¨ prose-invert è‰²ç³» */
 .prose-base {
     line-height: 1.75;
     color: #374151;
 }
 
+/* é»‘æš—æ¨¡å¼ä¸‹çš„åŸºç¡€æ–‡å­—é¢œè‰²å®šä¹‰ */
 html.dark .prose-base {
-    color: #d4d4d4;
+    color: #ffffff; /* åŸºç¡€æ–‡å­—æ”¹ä¸ºçº¯ç™½ */
 }
 
-::selection {
-    background: rgba(163, 163, 163, 0.35);
+/* å¼ºåˆ¶è¦†ç›–é»‘æš—æ¨¡å¼ä¸‹å†…å®¹åŒºåŸŸçš„æ‰€æœ‰å­å…ƒç´ é¢œè‰² */
+html.dark .prose-base,
+html.dark .prose-base p,
+html.dark .prose-base span,
+html.dark .prose-base li,
+html.dark .prose-base strong {
+        color: #ffffff !important;
 }
 
-html.dark ::selection {
-    background: rgba(64, 64, 64, 0.6);
+/* é»‘æš—æ¨¡å¼ä¸‹çš„æ ‡é¢˜é¢œè‰²ï¼Œä½¿ç”¨è‹¹æžœé£Žæ ¼çš„æµ…ç™½è‰² */
+html.dark .prose-base h1,
+html.dark .prose-base h2,
+html.dark .prose-base h3,
+html.dark .prose-base h4 {
+            color: #f5f5f7 !important;
+}
+
+h1, h2, h3, h4 {
+    letter-spacing: -0.02em; /* è‹¹æžœé£Žæ ¼çš„ç´§å‡‘å­—é—´è· */
+    font-weight: 600;
 }
 
 /* =========================================
-   Obsidian Callout (¾¯¸æ¿é) ÑùÊ½Ö§³Ö
+   Obsidian Callout (è­¦å‘Šå—) è‹¹æžœå‘³è§†è§‰å‡çº§
    ========================================= */
 
-/* »ù´¡ Callout ÈÝÆ÷ */
+/* åŸºç¡€ Callout å®¹å™¨ï¼šåŽ»æŽ‰äº†åŽšé‡çš„è¾¹æ¡†ï¼Œæ”¹ç”¨æµ…è‰²èƒŒæ™¯+ä¾§è¾¹æ¡ */
 .callout {
-    border: 1px solid var(--border, #e5e7eb);
+    border: 1px solid var(--border);
     border-left-width: 4px;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin: 1rem 0;
-    background-color: var(--callout-bg, rgba(128, 128, 128, 0.05));
-    overflow: hidden; /* ·ÀÖ¹ÄÚÈÝÒç³öÔ²½Ç */
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    background-color: var(--card-bg);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease;
 }
 
-/* ÉîÉ«Ä£Ê½ÏÂµÄ±ß¿òÊÊÅä */
-html.dark .callout {
-    border-color: #262626; /* neutral-800 */
-}
+    /* æ‚¬åœå¾®åŠ¨æ•ˆ */
+    .callout:hover {
+        transform: translateX(2px);
+    }
 
-/* --- Callout ±êÌâ --- */
 .callout-title {
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: inherit;
-    /* Èç¹ûÊÇ¿ÉÕÛµþµÄ (details/summary)£¬Ìí¼ÓÊó±êÊÖÊÆ */
-    cursor: pointer;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
 }
 
-/* ÐÞ¸´ details/summary µÄÄ¬ÈÏ¼ýÍ·£¬Í¨³£ Obsidian ·ç¸ñ²»Ê¹ÓÃÄ¬ÈÏµÄÐ¡Èý½Ç£¬»òÕß×Ô¶¨Òå */
+.callout-content {
+    font-size: 0.925rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+/* å„ç§ç±»åž‹çš„é¢œè‰²å¾®è°ƒ - é™ä½Žé¥±å’Œåº¦ï¼Œå¢žåŠ é«˜çº§æ„Ÿ */
+
+/* 1. Note / Info - è“è‰²ç³» */
+.callout[data-callout="note"],
+.callout[data-callout="info"],
+.callout[data-callout="abstract"] {
+    border-left-color: #0071e3;
+    background-color: rgba(0, 113, 227, 0.05);
+}
+
+    .callout[data-callout="note"] .callout-title,
+    .callout[data-callout="info"] .callout-title {
+        color: #0071e3;
+    }
+
+/* 2. Success / Tip - ç»¿è‰²ç³» */
+.callout[data-callout="tip"],
+.callout[data-callout="success"],
+.callout[data-callout="done"] {
+    border-left-color: #34c759;
+    background-color: rgba(52, 199, 89, 0.05);
+}
+
+    .callout[data-callout="tip"] .callout-title,
+    .callout[data-callout="success"] .callout-title {
+        color: #28a84d;
+    }
+
+/* 3. Warning / Caution - æ©™è‰²ç³» */
+.callout[data-callout="warning"],
+.callout[data-callout="caution"] {
+    border-left-color: #ff9500;
+    background-color: rgba(255, 149, 0, 0.05);
+}
+
+    .callout[data-callout="warning"] .callout-title {
+        color: #d67d00;
+    }
+
+/* 4. Danger / Error / Bug - çº¢è‰²ç³» */
+.callout[data-callout="danger"],
+.callout[data-callout="error"],
+.callout[data-callout="bug"] {
+    border-left-color: #ff3b30;
+    background-color: rgba(255, 59, 48, 0.05);
+}
+
+    .callout[data-callout="danger"] .callout-title {
+        color: #eb2f23;
+    }
+
+/* 5. Quote / Example - ç°è‰²æˆ–ç´«è‰² */
+.callout[data-callout="quote"] {
+    border-left-color: #8e8e93;
+    background-color: rgba(142, 142, 147, 0.05);
+}
+
+.callout[data-callout="example"] {
+    border-left-color: #af52de;
+    background-color: rgba(175, 82, 222, 0.05);
+}
+
+/* æŠ˜å é¢æ¿ (Details) çš„å¹³æ»‘å¤„ç† */
 details.callout > summary {
     list-style: none;
-    margin: -1rem -1rem 0 -1rem; /* µÖÏû padding£¬ÈÃ±êÌâÕ¼Âú¶¥²¿ */
-    padding: 1rem;
+    cursor: pointer;
     outline: none;
 }
 
@@ -92,126 +201,19 @@ details.callout > summary {
         display: none;
     }
 
-/* Õ¹¿ªÊ±µÄÄÚÈÝ¼ä¾à */
 details.callout[open] .callout-content {
-    margin-top: 1rem;
+    animation: fade-in 0.3s ease-out;
 }
 
-/* --- Callout ÄÚÈÝ --- */
-.callout-content p {
-    margin: 0; /* ÒÆ³ýÄÚÈÝÖÐ¶ÎÂäµÄÄ¬ÈÏÍâ±ß¾à£¬±ÜÃâË«ÖØ¼ä¾à */
-}
-
-    .callout-content p + p {
-        margin-top: 1em; /* ¶ÎÂäÖ®¼ä±£³Ö¼ä¾à */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
     }
 
-/* =========================================
-   ¸÷ÀàÐÍ Callout ÑÕÉ«¶¨Òå
-   ========================================= */
-
-/* 1. Ä¬ÈÏ/±Ê¼Ç (Note, Abstract, Summary, TLDR) - À¶É« */
-.callout[data-callout="note"],
-.callout[data-callout="abstract"],
-.callout[data-callout="summary"],
-.callout[data-callout="tldr"],
-.callout[data-callout="info"] {
-    border-left-color: #3b82f6; /* blue-500 */
-    background-color: rgba(59, 130, 246, 0.1);
-}
-
-    .callout[data-callout="note"] .callout-title,
-    .callout[data-callout="info"] .callout-title {
-        color: #2563eb; /* blue-600 */
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-
-html.dark .callout[data-callout="note"] .callout-title,
-html.dark .callout[data-callout="info"] .callout-title {
-    color: #60a5fa; /* blue-400 */
 }
 
-/* 2. ÌáÊ¾/³É¹¦ (Tip, Hint, Important, Success, Check, Done) - ÂÌÉ« */
-.callout[data-callout="tip"],
-.callout[data-callout="hint"],
-.callout[data-callout="important"],
-.callout[data-callout="success"],
-.callout[data-callout="check"],
-.callout[data-callout="done"] {
-    border-left-color: #10b981; /* emerald-500 */
-    background-color: rgba(16, 185, 129, 0.1);
-}
-
-    .callout[data-callout="tip"] .callout-title,
-    .callout[data-callout="success"] .callout-title {
-        color: #059669; /* emerald-600 */
-    }
-
-html.dark .callout[data-callout="tip"] .callout-title,
-html.dark .callout[data-callout="success"] .callout-title {
-    color: #34d399; /* emerald-400 */
-}
-
-/* 3. ¾¯¸æ (Warning, Caution, Attention) - ³ÈÉ« */
-.callout[data-callout="warning"],
-.callout[data-callout="caution"],
-.callout[data-callout="attention"] {
-    border-left-color: #f59e0b; /* amber-500 */
-    background-color: rgba(245, 158, 11, 0.1);
-}
-
-    .callout[data-callout="warning"] .callout-title {
-        color: #d97706; /* amber-600 */
-    }
-
-html.dark .callout[data-callout="warning"] .callout-title {
-    color: #fbbf24; /* amber-400 */
-}
-
-/* 4. ´íÎó/Î£ÏÕ (Failure, Fail, Missing, Danger, Error) - ºìÉ« */
-.callout[data-callout="failure"],
-.callout[data-callout="fail"],
-.callout[data-callout="missing"],
-.callout[data-callout="danger"],
-.callout[data-callout="error"],
-.callout[data-callout="bug"] {
-    border-left-color: #ef4444; /* red-500 */
-    background-color: rgba(239, 68, 68, 0.1);
-}
-
-    .callout[data-callout="failure"] .callout-title,
-    .callout[data-callout="error"] .callout-title {
-        color: #dc2626; /* red-600 */
-    }
-
-html.dark .callout[data-callout="failure"] .callout-title,
-html.dark .callout[data-callout="error"] .callout-title {
-    color: #f87171; /* red-400 */
-}
-
-/* 5. Ê¾Àý/ÒýÓÃ (Example, Quote) - ×ÏÉ«/»ÒÉ« */
-.callout[data-callout="example"] {
-    border-left-color: #8b5cf6; /* violet-500 */
-    background-color: rgba(139, 92, 246, 0.1);
-}
-
-.callout[data-callout="quote"] {
-    border-left-color: #9ca3af; /* gray-400 */
-    background-color: rgba(156, 163, 175, 0.1);
-}
-
-/* 6. ×Ô¶¨Òå£ºFigure (Í¼Æ¬ËµÃ÷) - ×ÏÉ« */
-.callout[data-callout="figure"] {
-    border-left-color: #7c3aed; /* violet-600 */
-    background-color: rgba(124, 58, 237, 0.05);
-}
-
-    .callout[data-callout="figure"] .callout-title {
-        color: #6d28d9; /* violet-700 */
-        font-size: 0.9em;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-html.dark .callout[data-callout="figure"] .callout-title {
-    color: #a78bfa; /* violet-400 */
-}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Search, Loader2, FileText, Calendar, Tag, ArrowRight, Command } from "lucide-react";
 
 type NoteItem = {
     slug: string;
@@ -18,8 +19,6 @@ function normalize(s: string) {
 
 export default function SearchPage() {
     const [q, setQ] = useState("");
-
-    // 这是客户端页面，所以我们用 fetch 调一个极简 API（下一步创建）
     const [data, setData] = useState<NoteItem[] | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -33,6 +32,11 @@ export default function SearchPage() {
             setLoading(false);
         }
     }
+
+    // 如果还没有数据，用户聚焦输入框时也可以触发加载（可选优化）
+    const handleFocus = () => {
+        if (!data && !loading) load();
+    };
 
     const items = data ?? [];
 
@@ -55,82 +59,131 @@ export default function SearchPage() {
     }, [q, items]);
 
     return (
-        <div className="space-y-6">
-            <header className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight">Search</h1>
-                <p className="prose-base">
-                    极简搜索：按标题/描述/标签/正文片段过滤（本地与 Vercel 都稳定）。
-                </p>
-            </header>
-
-            <div className="space-y-3">
-                <div className="flex gap-2">
-                    <input
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        placeholder="输入关键词…（例如：Math / LaTeX / React）"
-                        className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:focus:ring-neutral-700"
-                    />
-                    <button
-                        type="button"
-                        onClick={load}
-                        className="shrink-0 rounded-xl border border-neutral-200 px-4 py-2 text-sm transition hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900/40"
-                    >
-                        {data ? "Refresh" : "Load"}
-                    </button>
+        <div className="mx-auto max-w-3xl space-y-12 pb-20">
+            {/* Header Area */}
+            <div className="text-center space-y-4 py-8">
+                <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium dark:border-neutral-800 dark:bg-neutral-900">
+                    <Command className="h-3 w-3 text-purple-500" />
+                    <span>Quick Find</span>
                 </div>
+                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                    全站检索
+                </h1>
+                <p className="text-neutral-500 dark:text-neutral-400">
+                    即时查找笔记、实验与灵感片段。
+                </p>
+            </div>
 
-                {!data ? (
-                    <div className="rounded-2xl border border-neutral-200/70 p-5 dark:border-neutral-800/70">
-                        <p className="prose-base">
-                            点击 <b>Load</b> 加载索引后开始搜索。
-                        </p>
+            {/* Search Input Area */}
+            <div className="sticky top-24 z-30">
+                <div className="relative group">
+                    {/* 背景光晕装饰 */}
+                    <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
+
+                    <div className="relative flex items-center overflow-hidden rounded-[1.5rem] bg-white/80 shadow-2xl shadow-neutral-200/20 backdrop-blur-xl border border-neutral-200/50 dark:bg-neutral-900/80 dark:shadow-black/50 dark:border-neutral-700/50">
+                        <div className="pl-6 text-neutral-400">
+                            {loading ? (
+                                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                            ) : (
+                                <Search className="h-6 w-6" />
+                            )}
+                        </div>
+                        <input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            onFocus={handleFocus}
+                            placeholder="搜索标题、标签或内容..."
+                            className="h-16 w-full bg-transparent px-4 text-lg outline-none placeholder:text-neutral-400 dark:text-white"
+                        />
+                        <div className="pr-4">
+                            {!data && !loading && (
+                                <button
+                                    onClick={load}
+                                    className="rounded-full bg-neutral-100 px-4 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                                >
+                                    Load Index
+                                </button>
+                            )}
+                            {data && (
+                                <div className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-500 dark:bg-neutral-800">
+                                    {results.length} 结果
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ) : loading ? (
-                    <div className="rounded-2xl border border-neutral-200/70 p-5 dark:border-neutral-800/70">
-                        <p className="prose-base">Loading…</p>
+                </div>
+            </div>
+
+            {/* Results Area */}
+            <div className="space-y-6">
+                {!data ? (
+                    // 空状态：未加载索引
+                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
+                        <Command className="mb-4 h-12 w-12 text-neutral-300 dark:text-neutral-700" />
+                        <p className="text-sm">索引未加载，请输入内容或点击 Load</p>
+                    </div>
+                ) : results.length === 0 ? (
+                    // 空状态：无匹配结果
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <FileText className="mb-4 h-12 w-12 text-neutral-200 dark:text-neutral-800" />
+                        <p className="text-neutral-500">没有找到与 &quot;{q}&quot; 相关的结果</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                            共 {results.length} 条结果
-                        </div>
-
+                    // 结果列表
+                    <div className="grid gap-4">
                         {results.map((n) => (
                             <Link
                                 key={n.slug}
                                 href={`/notes/${n.slug}`}
-                                className="block rounded-2xl border border-neutral-200/70 p-5 transition hover:bg-neutral-50 dark:border-neutral-800/70 dark:hover:bg-neutral-900/40"
+                                className="group relative block overflow-hidden rounded-3xl border border-neutral-200/50 bg-white/40 p-6 transition-all hover:bg-white hover:shadow-lg dark:border-neutral-800/50 dark:bg-neutral-900/40 dark:hover:bg-neutral-900"
                             >
-                                <div className="flex items-baseline justify-between gap-3">
-                                    <h2 className="text-base font-semibold">{n.title}</h2>
-                                    <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                                        {n.date}
-                                    </span>
-                                </div>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="space-y-3">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2 text-xs text-neutral-400 mb-1">
+                                                <Calendar className="h-3 w-3" />
+                                                {n.date}
+                                            </div>
+                                            <h2 className="text-xl font-bold text-neutral-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 transition-colors">
+                                                {n.title}
+                                            </h2>
+                                        </div>
 
-                                {n.description ? (
-                                    <p className="prose-base mt-2">{n.description}</p>
-                                ) : null}
+                                        {/* Description */}
+                                        {n.description && (
+                                            <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-1">
+                                                {n.description}
+                                            </p>
+                                        )}
 
-                                {n.tags.length ? (
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        {n.tags.map((t) => (
-                                            <span
-                                                key={t}
-                                                className="rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
-                                            >
-                                                {t}
-                                            </span>
-                                        ))}
+                                        {/* Tags */}
+                                        {n.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                {n.tags.map((t) => (
+                                                    <span
+                                                        key={t}
+                                                        className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+                                                    >
+                                                        <Tag className="h-2 w-2" />
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Preview Snippet */}
+                                        {n.preview && (
+                                            <p className="text-xs text-neutral-400 line-clamp-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 mt-3 font-mono opacity-70">
+                                                {n.preview}
+                                            </p>
+                                        )}
                                     </div>
-                                ) : null}
 
-                                {n.preview ? (
-                                    <p className="mt-3 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
-                                        {n.preview}
-                                    </p>
-                                ) : null}
+                                    {/* Action Arrow */}
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 opacity-0 transition-all group-hover:opacity-100 group-hover:bg-blue-500 group-hover:text-white dark:bg-neutral-800">
+                                        <ArrowRight className="h-4 w-4" />
+                                    </div>
+                                </div>
                             </Link>
                         ))}
                     </div>
