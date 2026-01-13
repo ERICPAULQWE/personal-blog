@@ -46,6 +46,11 @@ export default async function AdminPage() {
                         disabled
                     />
                     <Card
+                        title="删除笔记"
+                        desc="删除 Markdown 文件，并清理同名资源文件夹"
+                        href="/admin/delete"
+                    />
+                    <Card
                         title="媒体库"
                         desc="图片资源管理 (开发中...)"
                         href="#"

@@ -16,9 +16,10 @@ async function getFileSha(path: string): Promise<string | undefined> {
             path,
             ref: BRANCH,
         });
+
         if (Array.isArray(data)) return undefined;
         return (data as { sha: string }).sha;
-    } catch { // 修复：直接使用不带变量的 catch 块
+    } catch {
         return undefined;
     }
 }
@@ -30,7 +31,9 @@ export async function updateRepoFile(
     isBase64: boolean = false
 ) {
     const sha = await getFileSha(path);
-    const finalContent = isBase64 ? content : Buffer.from(content, 'utf-8').toString("base64");
+    const finalContent = isBase64
+        ? content
+        : Buffer.from(content, "utf-8").toString("base64");
 
     await octokit.rest.repos.createOrUpdateFileContents({
         owner: OWNER,
@@ -43,4 +46,73 @@ export async function updateRepoFile(
     });
 
     return { success: true };
+}
+
+/** ✅ 删除单个文件（幂等：不存在则 skipped） */
+export async function deleteRepoFile(path: string, message?: string) {
+    const sha = await getFileSha(path);
+    if (!sha) return { success: true, skipped: true };
+
+    await octokit.rest.repos.deleteFile({
+        owner: OWNER,
+        repo: REPO,
+        path,
+        message: message ?? `Delete ${path}`,
+        sha,
+        branch: BRANCH,
+    });
+
+    return { success: true, skipped: false };
+}
+
+export type RepoContentItem = {
+    type: "file" | "dir";
+    path: string;
+};
+
+/** GitHub content list item（避免 any） */
+type GitHubContentListItem = {
+    type: "file" | "dir" | "symlink" | "submodule";
+    path: string;
+};
+
+/** ✅ 列出目录内容（不存在/非目录则返回空） */
+export async function listRepoDir(dirPath: string): Promise<RepoContentItem[]> {
+    try {
+        const { data } = await octokit.rest.repos.getContent({
+            owner: OWNER,
+            repo: REPO,
+            path: dirPath,
+            ref: BRANCH,
+        });
+
+        if (!Array.isArray(data)) return [];
+
+        return (data as GitHubContentListItem[]).map((it) => ({
+            type: it.type === "dir" ? "dir" : "file",
+            path: it.path,
+        }));
+    } catch {
+        return [];
+    }
+}
+
+/** ✅ 递归删除目录下所有文件/子目录（GitHub 无“删目录”，删完文件目录自然消失） */
+export async function deleteRepoDirRecursive(dirPath: string) {
+    const items = await listRepoDir(dirPath);
+    const deleted: string[] = [];
+    const skipped: string[] = [];
+
+    for (const it of items) {
+        if (it.type === "file") {
+            const res = await deleteRepoFile(it.path);
+            (res.skipped ? skipped : deleted).push(it.path);
+        } else {
+            const sub = await deleteRepoDirRecursive(it.path);
+            deleted.push(...sub.deleted);
+            skipped.push(...sub.skipped);
+        }
+    }
+
+    return { deleted, skipped };
 }
