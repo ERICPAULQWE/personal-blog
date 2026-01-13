@@ -25,7 +25,7 @@ function remarkObsidianImage() {
             let lastIndex = 0;
 
             while ((match = regex.exec(value)) !== null) {
-                const [fullMatch, filename, width] = match;
+                const [, filename, width] = match;
                 if (match.index > lastIndex) {
                     newNodes.push({
                         type: "text",

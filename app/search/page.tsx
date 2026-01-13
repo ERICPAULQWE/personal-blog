@@ -33,14 +33,13 @@ export default function SearchPage() {
         }
     }
 
-    // 如果还没有数据，用户聚焦输入框时也可以触发加载（可选优化）
     const handleFocus = () => {
         if (!data && !loading) load();
     };
 
-    const items = data ?? [];
-
+    // 修复：将 items 的逻辑移入 useMemo 或直接依赖 data
     const results = useMemo(() => {
+        const items = data ?? []; // 移入这里，避免 items 变量本身成为不稳定依赖
         const query = normalize(q);
         if (!query) return items;
 
@@ -56,11 +55,10 @@ export default function SearchPage() {
             );
             return hay.includes(query);
         });
-    }, [q, items]);
+    }, [q, data]); // 依赖项改为稳定的 data
 
     return (
         <div className="mx-auto max-w-3xl space-y-12 pb-20">
-            {/* Header Area */}
             <div className="text-center space-y-4 py-8">
                 <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium dark:border-neutral-800 dark:bg-neutral-900">
                     <Command className="h-3 w-3 text-purple-500" />
@@ -74,10 +72,8 @@ export default function SearchPage() {
                 </p>
             </div>
 
-            {/* Search Input Area */}
             <div className="sticky top-24 z-30">
                 <div className="relative group">
-                    {/* 背景光晕装饰 */}
                     <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
 
                     <div className="relative flex items-center overflow-hidden rounded-[1.5rem] bg-white/80 shadow-2xl shadow-neutral-200/20 backdrop-blur-xl border border-neutral-200/50 dark:bg-neutral-900/80 dark:shadow-black/50 dark:border-neutral-700/50">
@@ -114,22 +110,18 @@ export default function SearchPage() {
                 </div>
             </div>
 
-            {/* Results Area */}
             <div className="space-y-6">
                 {!data ? (
-                    // 空状态：未加载索引
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                         <Command className="mb-4 h-12 w-12 text-neutral-300 dark:text-neutral-700" />
                         <p className="text-sm">索引未加载，请输入内容或点击 Load</p>
                     </div>
                 ) : results.length === 0 ? (
-                    // 空状态：无匹配结果
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <FileText className="mb-4 h-12 w-12 text-neutral-200 dark:text-neutral-800" />
                         <p className="text-neutral-500">没有找到与 &quot;{q}&quot; 相关的结果</p>
                     </div>
                 ) : (
-                    // 结果列表
                     <div className="grid gap-4">
                         {results.map((n) => (
                             <Link
@@ -149,14 +141,12 @@ export default function SearchPage() {
                                             </h2>
                                         </div>
 
-                                        {/* Description */}
                                         {n.description && (
                                             <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-1">
                                                 {n.description}
                                             </p>
                                         )}
 
-                                        {/* Tags */}
                                         {n.tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2 pt-1">
                                                 {n.tags.map((t) => (
@@ -171,7 +161,6 @@ export default function SearchPage() {
                                             </div>
                                         )}
 
-                                        {/* Preview Snippet */}
                                         {n.preview && (
                                             <p className="text-xs text-neutral-400 line-clamp-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 mt-3 font-mono opacity-70">
                                                 {n.preview}
@@ -179,7 +168,6 @@ export default function SearchPage() {
                                         )}
                                     </div>
 
-                                    {/* Action Arrow */}
                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 opacity-0 transition-all group-hover:opacity-100 group-hover:bg-blue-500 group-hover:text-white dark:bg-neutral-800">
                                         <ArrowRight className="h-4 w-4" />
                                     </div>

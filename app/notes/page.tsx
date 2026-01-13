@@ -1,7 +1,6 @@
 ﻿import Link from "next/link";
 import { getAllNotes } from "@/lib/content";
 import { Calendar, Tag, ChevronRight, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export default function NotesPage() {
     const notes = getAllNotes();

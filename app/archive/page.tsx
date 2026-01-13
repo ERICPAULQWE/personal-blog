@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { groupNotesByMonth } from "@/lib/content"; // 使用 @ 别名防止路径错误
-import { Archive, ArrowUpRight, Clock, CalendarDays } from "lucide-react";
+import { Archive, ArrowUpRight, Clock } from "lucide-react";
 
 export default function ArchivePage() {
     const groups = groupNotesByMonth();
