@@ -50,4 +50,20 @@ export const labs: Lab[] = [
         tags: ["DSP", "Math", "Interactive"],
         fullScreen: false, // 混合模式
     },
+    {
+        slug: "emoji-merge",
+        title: "Emoji 合成大西瓜",
+        description: "EMOJI合成大西瓜",
+        date: "2026-01-14",
+        tags: ["Game", "Physics", "Matter.js"],
+        fullScreen: true,
+    },
+    {
+        slug: "pathfinding", // URL 与目录名，使用小写加连字符
+        title: "寻路算法可视化", // 页面显示的标题
+        description: "演示启发式搜索如何在复杂地形中找到最短路径", // 用于列表页与 SEO 的摘要
+        date: "2026-01-14", // 排序与展示日期，格式必须为 YYYY-MM-DD
+        tags: ["Algorithm", "React", "Visualization"], // 分类标签
+        fullScreen: false, // 混合模式设置为 false，组件将在舞台区域展示
+    },
 ];
