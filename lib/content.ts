@@ -41,21 +41,57 @@ function fileToSlug(filepath: string) {
 }
 
 export function getAllNotes(): Note[] {
+    // 1. 递归获取所有 .md 文件
     const files = walk(NOTES_DIR);
 
     const notes = files.map((fp) => {
         const raw = fs.readFileSync(fp, "utf-8");
         const { data, content } = matter(raw);
+
+        // 2. 获取相对路径 slug (例如: "学习/第5章")
+        const slug = fileToSlug(fp);
+
+        // 3. 自动提取文件夹名称作为标签
+        // 例如 slug 为 "学习/计算机/笔记"，则 folderTags 为 ["学习", "计算机"]
+        const pathParts = slug.split("/");
+        const folderTags = pathParts.slice(0, -1);
+
+        // 4. 处理手动定义的 tags (兼容字符串或数组格式)
+        let manualTags: string[] = [];
+        if (data.tags) {
+            manualTags = Array.isArray(data.tags) ? data.tags : [data.tags];
+        }
+
+        // 5. 合并标签并去重
+        const combinedTags = Array.from(
+            new Set([...manualTags, ...folderTags])
+        ).filter(tag => !!tag.trim()); // 过滤掉空格或空字符串
+
+        // 6. 构造最终的 Note 对象，并为缺失字段提供默认值 (防止列表页空白)
         return {
-            slug: fileToSlug(fp),
-            frontmatter: data as Frontmatter,
+            slug,
+            frontmatter: {
+                title: data.title || path.basename(fp, ".md"), // 没写标题就用文件名
+                date: data.date || "2000-01-01",              // 没写日期给个默认值
+                description: data.description || "",
+                tags: combinedTags,                           // 使用合并后的标签
+                status: data.status || "published",           // 默认设为发布
+                ...data                                       // 保留其他原始元数据
+            } as Frontmatter,
             content,
         };
     });
 
+    // 7. 过滤逻辑：只显示非草稿状态的笔记
     const published = notes.filter((n) => n.frontmatter.status !== "draft");
 
-    published.sort((a, b) => (a.frontmatter.date < b.frontmatter.date ? 1 : -1));
+    // 8. 排序逻辑：按日期倒序排列，确保即使日期格式不对也能安全运行
+    published.sort((a, b) => {
+        const dateA = a.frontmatter.date || "";
+        const dateB = b.frontmatter.date || "";
+        return dateA < dateB ? 1 : -1;
+    });
+
     return published;
 }
 
