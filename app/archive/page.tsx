@@ -19,6 +19,7 @@ type TimelineItem = {
     date: string; // YYYY-MM-DD
     tags: string[];
 };
+
 type NoteFrontmatter = {
     title: string;
     description?: string;
@@ -76,7 +77,6 @@ export default function ArchivePage() {
         }))
     );
 
-
     // 2) Labs → registry
     const labItems: TimelineItem[] = labs.map((l) => ({
         kind: "lab" as const,
@@ -101,27 +101,38 @@ export default function ArchivePage() {
     // 4) 月份降序 + 月内日期降序
     const groups = Array.from(map.entries())
         .sort(([a], [b]) => (a < b ? 1 : -1))
-        .map(([ym, items]) => [
-            ym,
-            items.sort((a, b) => (a.date < b.date ? 1 : -1)),
-        ] as const);
+        .map(([ym, items]) => [ym, items.sort((a, b) => (a.date < b.date ? 1 : -1))] as const);
 
     return (
         <div className="space-y-12 pb-20">
-            {/* Header */}
-            <section className="text-center space-y-4 py-8">
-                <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium dark:border-neutral-800 dark:bg-neutral-900">
-                    <Clock className="h-3 w-3 text-blue-500" />
+            {/* Header：浅黄 pill + 黄橙渐变标题（主题色=黄） */}
+            <section className="text-center space-y-4 py-10">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-400/15 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-300">
+                    <Clock className="h-3 w-3 text-amber-500 dark:text-amber-300" />
                     <span>Time Machine</span>
                 </div>
-                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">归档</h1>
+
+                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                    <span className="bg-gradient-to-r from-orange-500 to-yellow-400 bg-clip-text text-transparent dark:from-orange-400 dark:to-yellow-300">
+                        Archive
+                    </span>
+                    <span className="text-neutral-900 dark:text-white"> / 归档</span>
+                </h1>
+
                 <p className="text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
                     按照时间轴回顾所有的思考与记录（笔记 + 实验）。
                 </p>
             </section>
 
-            {/* Timeline Container */}
-            <div className="relative border-l border-neutral-200 dark:border-neutral-800 ml-4 md:ml-10 space-y-16">
+            {/* Timeline Container（不改排版：仍是同一块容器；仅把 border-l 升级为渐变时间线） */}
+            <div
+                className={[
+                    "relative ml-4 md:ml-10 space-y-16",
+                    "before:absolute before:inset-y-0 before:left-0 before:w-px",
+                    "before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent",
+                    "dark:before:via-neutral-800",
+                ].join(" ")}
+            >
                 {groups.length > 0 ? (
                     groups.map(([ym, items]) => {
                         const noteCount = items.filter((x) => x.kind === "note").length;
@@ -129,10 +140,10 @@ export default function ArchivePage() {
 
                         return (
                             <div key={ym} className="relative pl-8 md:pl-12">
-                                {/* Timeline Node：用更中性的节点色，避免“月份被某类型染色” */}
-                                <div className="absolute -left-[5px] top-2 h-2.5 w-2.5 rounded-full bg-neutral-400 ring-4 ring-white dark:ring-black dark:bg-neutral-600" />
+                                {/* Timeline Node：玻璃质感（位置不变） */}
+                                <div className="absolute -left-[7px] top-2 h-3.5 w-3.5 rounded-full bg-neutral-300/80 dark:bg-neutral-600/80 ring-[6px] ring-white/70 dark:ring-black/40 backdrop-blur-md shadow-sm" />
 
-                                {/* Month Header */}
+                                {/* Month Header（结构不变，只更细腻一点） */}
                                 <div className="flex flex-wrap items-end gap-3 mb-6">
                                     <h2 className="text-3xl font-bold tracking-tighter text-neutral-900 dark:text-white">
                                         {ym}
@@ -142,20 +153,19 @@ export default function ArchivePage() {
                                         {items.length} 条
                                     </span>
 
-                                    {/* Breakdown pills：苹果风浅底 + 边框 */}
                                     <span className="mb-1.5 inline-flex items-center gap-2">
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:text-blue-300">
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:text-blue-300 backdrop-blur-md">
                                             <FileText className="h-3 w-3" />
                                             {noteCount}
                                         </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-700 dark:text-purple-300 backdrop-blur-md">
                                             <FlaskConical className="h-3 w-3" />
                                             {labCount}
                                         </span>
                                     </span>
                                 </div>
 
-                                {/* Items List */}
+                                {/* Items List（排版不变：只升级玻璃卡 + hover/focus。主题色=黄） */}
                                 <div className="space-y-3">
                                     {items.map((it) => {
                                         const day = getDay(it.date);
@@ -179,15 +189,26 @@ export default function ArchivePage() {
                                             <Link
                                                 key={`${it.kind}:${it.slug}`}
                                                 href={href}
-                                                className="group block relative overflow-hidden rounded-2xl border border-transparent bg-white/50 hover:bg-white hover:border-neutral-200 hover:shadow-lg dark:bg-neutral-900/50 dark:hover:bg-neutral-900 dark:hover:border-neutral-800 dark:hover:shadow-neutral-900/50 transition-all duration-300 p-4"
+                                                className={[
+                                                    "group block relative overflow-hidden rounded-2xl p-4 transition-all duration-300",
+                                                    // 玻璃卡基座
+                                                    "border border-neutral-200/60 bg-white/55 backdrop-blur-md",
+                                                    "dark:border-neutral-800/60 dark:bg-neutral-900/45",
+                                                    // hover：黄系主题阴影/边框强调（不改变布局）
+                                                    "hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-2xl hover:shadow-amber-500/10 hover:border-amber-500/30",
+                                                    "dark:hover:bg-neutral-900/65 dark:hover:shadow-black/20",
+                                                    // focus：键盘可达性
+                                                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950",
+                                                ].join(" ")}
                                             >
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                                                        {/* Date Badge */}
+                                                        {/* Date Badge（结构不变：增强边框与质感；仍保留 note/lab 的 hover 色） */}
                                                         <div
                                                             className={[
                                                                 "flex flex-col items-center justify-center h-12 w-12 shrink-0 rounded-xl",
-                                                                "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400",
+                                                                "bg-neutral-100/80 dark:bg-neutral-800/70 text-neutral-700 dark:text-neutral-300",
+                                                                "border border-neutral-200/60 dark:border-neutral-700/60",
                                                                 "font-mono text-sm transition-colors duration-300",
                                                                 hoverAccent,
                                                                 "group-hover:text-white",
@@ -196,10 +217,12 @@ export default function ArchivePage() {
                                                             <span className="text-[10px] opacity-70 uppercase leading-none mb-0.5">
                                                                 Day
                                                             </span>
-                                                            <span className="font-bold text-lg leading-none">{day}</span>
+                                                            <span className="font-bold text-lg leading-none">
+                                                                {day}
+                                                            </span>
                                                         </div>
 
-                                                        {/* Title & Desc */}
+                                                        {/* Title & Desc（排版不变） */}
                                                         <div className="space-y-1 min-w-0">
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 {typeBadge(it.kind)}
@@ -219,12 +242,13 @@ export default function ArchivePage() {
                                                                 </p>
                                                             ) : null}
 
+                                                            {/* Tags（结构不变：chip 更玻璃/更精致） */}
                                                             {it.tags?.length ? (
                                                                 <div className="flex flex-wrap gap-1.5 pt-1">
                                                                     {it.tags.slice(0, 6).map((t) => (
                                                                         <span
                                                                             key={t}
-                                                                            className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+                                                                            className="inline-flex items-center gap-1 rounded-full border border-neutral-200/60 bg-neutral-100/70 px-2 py-0.5 text-[10px] font-medium text-neutral-600 backdrop-blur-md dark:border-neutral-800/60 dark:bg-neutral-800/60 dark:text-neutral-300"
                                                                         >
                                                                             <Tag className="h-2.5 w-2.5 opacity-70" />
                                                                             {t}
@@ -240,7 +264,7 @@ export default function ArchivePage() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Arrow Icon */}
+                                                    {/* Arrow Icon（保持原有动效；配合黄主题的卡片 hover） */}
                                                     <ArrowUpRight
                                                         className={[
                                                             "h-5 w-5 text-neutral-300 transition-all duration-300",
