@@ -398,16 +398,23 @@ export default function LabsPage() {
             >
                 {/* Sidebar */}
                 <aside className="lg:sticky lg:top-24 h-fit">
-                    {/* Collapsed Rail + Expand Button */}
+                    {/* Collapsed: no rail, but keep a tiny anchor to position the expand button near content */}
                     {sidebarCollapsed ? (
                         <div className="relative">
-                            {/* narrow pill */}
-                            <div className="glass rounded-3xl border border-neutral-200/60 dark:border-neutral-800/60 h-[72vh] min-h-[420px]" />
-                            {/* floating expand button */}
+                            {/* ✅ anchor only: no visible rail */}
+                            <div className="w-[1px] h-[72vh] min-h-[420px]" />
+
+                            {/* ✅ expand button stays next to main content edge */}
                             <button
                                 type="button"
                                 onClick={() => setSidebarCollapsed(false)}
-                                className="glass absolute top-6 -right-4 h-10 w-10 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-center hover:bg-white/60 dark:hover:bg-neutral-800/50 transition"
+                                className={[
+                                    "glass absolute top-6 -right-4 h-10 w-10 rounded-2xl",
+                                    "border border-neutral-200/60 dark:border-neutral-800/60",
+                                    "flex items-center justify-center",
+                                    "hover:bg-white/60 dark:hover:bg-neutral-800/50 transition",
+                                    "shadow-sm",
+                                ].join(" ")}
                                 aria-label="Expand sidebar"
                                 title="Expand"
                             >
@@ -517,7 +524,6 @@ export default function LabsPage() {
                         </div>
                     )}
                 </aside>
-
                 {/* Main */}
                 <section className="space-y-6">
                     {/* Search */}

@@ -5,6 +5,8 @@ import { getTableOfContents } from "../../../lib/toc";
 import { buildFileTree } from "../../../lib/tree";
 import { NotesLayoutClient } from "../../../components/notes-layout-client";
 import { Calendar, User } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 // 生成静态路径 (SSG)
 export function generateStaticParams() {
@@ -33,6 +35,15 @@ export default async function NoteDetailPage({
 
     return (
         <NotesLayoutClient tree={tree} toc={toc}>
+            <Link
+                href="/notes"
+                className="fixed left-6 top-6 z-50 inline-flex items-center gap-2 rounded-2xl border border-neutral-200/60 bg-white/60 px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm backdrop-blur-md transition hover:bg-white/80 hover:text-neutral-900 dark:border-neutral-800/60 dark:bg-black/30 dark:text-neutral-200 dark:hover:bg-black/40"
+                aria-label="Back to Notes"
+                title="返回 Notes"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Notes</span>
+            </Link>
             <div className="space-y-12 pb-20">
                 {/* 文章头部信息 */}
                 <header className="space-y-6 border-b border-neutral-100 dark:border-neutral-800 pb-8">
