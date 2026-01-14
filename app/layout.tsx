@@ -5,6 +5,7 @@ import { ThemeProvider } from "../components/theme-provider";
 import { SiteHeader } from "../components/site-header";
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://hfy-blog.site"),
     title: "ERIC's Blog",
     description: "Learning notes & interactive labs.",
 };
