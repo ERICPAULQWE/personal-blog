@@ -30,6 +30,16 @@ import {
     MessageCircle,
     Image as ImageIcon,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+    staggerContainer,
+    fadeInUp,
+    heroSlideLeft,
+    heroSlideRight,
+    heroSlideUp,
+} from "@/components/motion/variants";
+import { AnimatePresence } from "framer-motion";
+import type { Variants } from "framer-motion";
 
 type PresetKey = "game" | "sim" | "viz" | "tool";
 type CategoryKey = "all" | `preset:${PresetKey}` | `tag:${string}`;
@@ -195,6 +205,48 @@ const PRESET_STYLE: Record<
         badgeBorder: "border-amber-500/20",
         badgeText: "text-amber-700 dark:text-amber-300",
         presetIcon: <Wrench className="h-3.5 w-3.5" />,
+    },
+};
+
+/* Sidebar 动画 variants（easeInOut 方案） */
+const sidebarPanel: Variants = {
+    hidden: { opacity: 0, x: -24 },
+    show: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.8,
+            ease: "easeInOut",
+        },
+    },
+    exit: {
+        opacity: 0,
+        x: -24,
+        transition: {
+            duration: 0.45,
+            ease: "easeInOut",
+        },
+    },
+};
+
+/* ✅ 列表容器：只负责 stagger，不控制 opacity（避免整体透明/首屏不触发） */
+const listStagger: Variants = {
+    hidden: {},
+    show: {
+        transition: {
+            staggerChildren: 0.06,
+            delayChildren: 0.02,
+        },
+    },
+};
+
+/* ✅ 每张卡片入场：opacity/y（首屏 & 切换都稳定） */
+const cardIn: Variants = {
+    hidden: { opacity: 0, y: 14 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.6, ease: "easeInOut" },
     },
 };
 
@@ -368,26 +420,44 @@ export default function LabsPage() {
     return (
         <div className="space-y-12">
             {/* Header */}
-            <section className="space-y-4 py-10 text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/5 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400">
+            <motion.section
+                className="space-y-4 py-10 text-center"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+            >
+                <motion.div
+                    variants={fadeInUp}
+                    className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/5 px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400"
+                >
                     <FlaskConical className="h-3 w-3" />
                     <span>Experimental Playground</span>
-                </div>
+                </motion.div>
 
                 <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-blue-400">
+                    <motion.span
+                        variants={heroSlideRight}
+                        className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+                    >
                         Labs
-                    </span>
-                    <span className="text-neutral-200 dark:text-neutral-800"> / </span>
-                    <span className="text-neutral-900 dark:text-white">Experiments</span>
+                    </motion.span>
+                    <motion.span
+                        variants={heroSlideLeft}
+                        className="inline-block text-neutral-900 dark:text-white"
+                    >
+                        {" "}
+                        / 实验
+                    </motion.span>
                 </h1>
 
-                <p className="mx-auto max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
+                <motion.p
+                    variants={heroSlideUp}
+                    className="mx-auto max-w-xl text-lg text-neutral-500 dark:text-neutral-400"
+                >
                     这里存放着我的交互实验、UI 组件原型以及一些有趣的 Web 技术探索。
-                    <br className="hidden md:block" />
                     它们可能不完美，但一定很有趣。
-                </p>
-            </section>
+                </motion.p>
+            </motion.section>
 
             {/* Layout */}
             <div
@@ -397,7 +467,11 @@ export default function LabsPage() {
                 ].join(" ")}
             >
                 {/* Sidebar */}
-                <aside className="lg:sticky lg:top-24 h-fit">
+                <motion.aside
+                    className="lg:sticky lg:top-24 h-fit"
+                    initial="hidden"
+                    animate="show"
+                >
                     {/* Collapsed: no rail, but keep a tiny anchor to position the expand button near content */}
                     {sidebarCollapsed ? (
                         <div className="relative">
@@ -422,108 +496,118 @@ export default function LabsPage() {
                             </button>
                         </div>
                     ) : (
-                        <div className="glass rounded-3xl border border-neutral-200/60 dark:border-neutral-800/60 p-4">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">分类</div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key="labs-sidebar-panel"
+                                variants={sidebarPanel}
+                                initial="hidden"
+                                animate="show"
+                                exit="exit"
+                                className="glass rounded-3xl border border-neutral-200/60 dark:border-neutral-800/60 p-4"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">分类</div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="text-[11px] font-mono opacity-60">
-                                        {filtered.length}/{labs.length}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setSidebarCollapsed(true)}
-                                        className="h-9 w-9 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-center hover:bg-white/60 dark:hover:bg-neutral-800/50 transition"
-                                        aria-label="Collapse sidebar"
-                                        title="Collapse"
-                                    >
-                                        <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Preset Segmented Control */}
-                            <div className="mt-4">
-                                <div className="relative rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 bg-white/40 dark:bg-neutral-900/30 p-1 overflow-hidden">
-                                    {segmentActiveIndex >= 0 && (
-                                        <div
-                                            className="absolute left-1 right-1 h-[44px] rounded-xl bg-neutral-900 dark:bg-white transition-transform duration-300 ease-out"
-                                            style={{ transform: `translateY(${segmentActiveIndex * 46}px)` }}
-                                        />
-                                    )}
-
-                                    <div className="relative z-10 space-y-1">
-                                        {PRESET_SEGMENTS.map((seg) => {
-                                            const active =
-                                                (seg.key === "all" && category === "all") ||
-                                                (seg.key !== "all" && category === `preset:${seg.key}`);
-
-                                            return (
-                                                <button
-                                                    key={seg.key}
-                                                    type="button"
-                                                    onClick={() => setCategory(seg.key === "all" ? "all" : `preset:${seg.key}`)}
-                                                    className={[
-                                                        "w-full h-[44px] rounded-xl px-3 flex items-center justify-between transition-colors",
-                                                        active
-                                                            ? "text-white dark:text-black"
-                                                            : "text-neutral-700 hover:bg-white/50 dark:text-neutral-300 dark:hover:bg-neutral-800/40",
-                                                    ].join(" ")}
-                                                >
-                                                    <span className="flex items-center gap-2 min-w-0">
-                                                        <span className={active ? "opacity-95" : "opacity-70"}>{seg.icon}</span>
-                                                        <span className="truncate text-sm font-medium">{seg.label}</span>
-                                                    </span>
-
-                                                    <span className={active ? "opacity-70 text-[11px] font-mono" : "opacity-40 text-[11px] font-mono"}>
-                                                        {seg.key === "all" ? "All" : seg.key.toUpperCase()}
-                                                    </span>
-                                                </button>
-                                            );
-                                        })}
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-[11px] font-mono opacity-60">
+                                            {filtered.length}/{labs.length}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSidebarCollapsed(true)}
+                                            className="h-9 w-9 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-center hover:bg-white/60 dark:hover:bg-neutral-800/50 transition"
+                                            aria-label="Collapse sidebar"
+                                            title="Collapse"
+                                        >
+                                            <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
+                                {/* Preset Segmented Control */}
+                                <div className="mt-4">
+                                    <div className="relative rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 bg-white/40 dark:bg-neutral-900/30 p-1 overflow-hidden">
+                                        {segmentActiveIndex >= 0 && (
+                                            <div
+                                                className="absolute left-1 right-1 h-[44px] rounded-xl bg-neutral-900 dark:bg-white transition-transform duration-300 ease-out"
+                                                style={{ transform: `translateY(${segmentActiveIndex * 46}px)` }}
+                                            />
+                                        )}
 
-                            {/* Tags header (collapsed by default) */}
-                            <button
-                                type="button"
-                                onClick={() => setTagsExpanded((v) => !v)}
-                                className="w-full flex items-center justify-between rounded-2xl px-2 py-2 hover:bg-white/40 dark:hover:bg-neutral-800/30 transition"
-                                aria-expanded={tagsExpanded}
-                            >
-                                <div className="text-xs font-mono uppercase tracking-widest text-neutral-400">Tags</div>
-                                <div className="flex items-center gap-2 text-neutral-400">
-                                    <span className="text-[11px] font-mono opacity-70">{tagStats.length}</span>
-                                    <ChevronDown className={["h-4 w-4 transition-transform", tagsExpanded ? "rotate-180" : ""].join(" ")} />
+                                        <div className="relative z-10 space-y-1">
+                                            {PRESET_SEGMENTS.map((seg) => {
+                                                const active =
+                                                    (seg.key === "all" && category === "all") ||
+                                                    (seg.key !== "all" && category === `preset:${seg.key}`);
+
+                                                return (
+                                                    <button
+                                                        key={seg.key}
+                                                        type="button"
+                                                        onClick={() => setCategory(seg.key === "all" ? "all" : `preset:${seg.key}`)}
+                                                        className={[
+                                                            "w-full h-[44px] rounded-xl px-3 flex items-center justify-between transition-colors",
+                                                            active
+                                                                ? "text-white dark:text-black"
+                                                                : "text-neutral-700 hover:bg-white/50 dark:text-neutral-300 dark:hover:bg-neutral-800/40",
+                                                        ].join(" ")}
+                                                    >
+                                                        <span className="flex items-center gap-2 min-w-0">
+                                                            <span className={active ? "opacity-95" : "opacity-70"}>{seg.icon}</span>
+                                                            <span className="truncate text-sm font-medium">{seg.label}</span>
+                                                        </span>
+
+                                                        <span className={active ? "opacity-70 text-[11px] font-mono" : "opacity-40 text-[11px] font-mono"}>
+                                                            {seg.key === "all" ? "All" : seg.key.toUpperCase()}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
-                            </button>
 
-                            {/* Tags list: expand to ~6 items height, scroll inside */}
-                            <div
-                                className={[
-                                    "mt-2 overflow-hidden transition-[max-height,opacity] duration-300 ease-out",
-                                    tagsExpanded ? "max-h-[240px] opacity-100" : "max-h-0 opacity-0",
-                                ].join(" ")}
-                            >
-                                <div className="max-h-[240px] overflow-auto pr-1 space-y-1">
-                                    {tagStats.map(({ tag, count }) => (
-                                        <NavItem
-                                            key={tag}
-                                            active={category === `tag:${tag}`}
-                                            label={tag}
-                                            right={String(count)}
-                                            leftIcon={<span className="h-4 w-4 grid place-items-center opacity-60">#</span>}
-                                            onClick={() => setCategory(`tag:${tag}`)}
-                                        />
-                                    ))}
+                                <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
+
+                                {/* Tags header (collapsed by default) */}
+                                <button
+                                    type="button"
+                                    onClick={() => setTagsExpanded((v) => !v)}
+                                    className="w-full flex items-center justify-between rounded-2xl px-2 py-2 hover:bg-white/40 dark:hover:bg-neutral-800/30 transition"
+                                    aria-expanded={tagsExpanded}
+                                >
+                                    <div className="text-xs font-mono uppercase tracking-widest text-neutral-400">Tags</div>
+                                    <div className="flex items-center gap-2 text-neutral-400">
+                                        <span className="text-[11px] font-mono opacity-70">{tagStats.length}</span>
+                                        <ChevronDown className={["h-4 w-4 transition-transform", tagsExpanded ? "rotate-180" : ""].join(" ")} />
+                                    </div>
+                                </button>
+
+                                {/* Tags list: expand to ~6 items height, scroll inside */}
+                                <div
+                                    className={[
+                                        "mt-2 overflow-hidden transition-[max-height,opacity] duration-300 ease-out",
+                                        tagsExpanded ? "max-h-[240px] opacity-100" : "max-h-0 opacity-0",
+                                    ].join(" ")}
+                                >
+                                    <div className="max-h-[240px] overflow-auto pr-1 space-y-1">
+                                        {tagStats.map(({ tag, count }) => (
+                                            <NavItem
+                                                key={tag}
+                                                active={category === `tag:${tag}`}
+                                                label={tag}
+                                                right={String(count)}
+                                                leftIcon={<span className="h-4 w-4 grid place-items-center opacity-60">#</span>}
+                                                onClick={() => setCategory(`tag:${tag}`)}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </motion.div>
+                        </AnimatePresence>
                     )}
-                </aside>
+                </motion.aside>
+
                 {/* Main */}
                 <section className="space-y-6">
                     {/* Search */}
@@ -563,98 +647,109 @@ export default function LabsPage() {
                             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">换个关键词，或者试试左侧其它分类/标签。</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {filtered.map((lab) => {
-                                const tags = lab.tags ?? [];
-                                const primary = getPrimaryPreset(tags);
-                                const style = PRESET_STYLE[primary];
+                        <AnimatePresence mode="sync">
+                            <motion.div
+                                key={`${category}|${q}`}
+                                variants={listStagger}
+                                initial="hidden"
+                                animate="show"
+                                exit={{ opacity: 0, y: 6, transition: { duration: 0.2, ease: "easeInOut" } }}
+                                className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+                            >
+                                {filtered.map((lab) => {
+                                    const tags = lab.tags ?? [];
+                                    const primary = getPrimaryPreset(tags);
+                                    const style = PRESET_STYLE[primary];
 
-                                // 预览 icon（主题匹配），无命中则兜底主分类 icon
-                                const previewIcon = pickPreviewIcon(tags, primary);
+                                    // 预览 icon（主题匹配），无命中则兜底主分类 icon
+                                    const previewIcon = pickPreviewIcon(tags, primary);
 
-                                return (
-                                    <Link
-                                        key={lab.slug}
-                                        href={`/labs/${lab.slug}`}
-                                        className={[
-                                            "group relative overflow-hidden rounded-[2rem] glass transition-all",
-                                            "hover:-translate-y-1 hover:shadow-2xl",
-                                            style.hoverShadow,
-                                        ].join(" ")}
-                                    >
-                                        {/* Preview: 渐变 ONLY depends on primary preset */}
-                                        <div className={["relative h-48 w-full overflow-hidden bg-gradient-to-br", style.previewGradient].join(" ")}>
-                                            {/* Badge: primary preset */}
-                                            <div className="absolute left-4 top-4 z-20">
-                                                <div
-                                                    className={[
-                                                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md",
-                                                        "bg-white/60 dark:bg-black/20",
-                                                        `bg-gradient-to-r ${style.badgeGradient}`,
-                                                        style.badgeBorder,
-                                                        style.badgeText,
-                                                    ].join(" ")}
-                                                >
-                                                    <span className="opacity-90">{style.presetIcon}</span>
-                                                    <span>{getPresetLabel(primary)}</span>
-                                                </div>
-                                            </div>
+                                    return (
+                                        <motion.div key={lab.slug} variants={cardIn}>
+                                            <Link
+                                                key={lab.slug}
+                                                href={`/labs/${lab.slug}`}
+                                                className={[
+                                                    "block group relative overflow-hidden rounded-[2rem] glass transition-all",
+                                                    "hover:-translate-y-1 hover:shadow-2xl",
+                                                    style.hoverShadow,
+                                                ].join(" ")}
+                                            >
+                                                {/* Preview: 渐变 ONLY depends on primary preset */}
+                                                <div className={["relative h-48 w-full overflow-hidden bg-gradient-to-br", style.previewGradient].join(" ")}>
+                                                    {/* Badge: primary preset */}
+                                                    <div className="absolute left-4 top-4 z-20">
+                                                        <div
+                                                            className={[
+                                                                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md",
+                                                                "bg-white/60 dark:bg-black/20",
+                                                                `bg-gradient-to-r ${style.badgeGradient}`,
+                                                                style.badgeBorder,
+                                                                style.badgeText,
+                                                            ].join(" ")}
+                                                        >
+                                                            <span className="opacity-90">{style.presetIcon}</span>
+                                                            <span>{getPresetLabel(primary)}</span>
+                                                        </div>
+                                                    </div>
 
-                                            {/* Glows */}
-                                            <div className={["absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl transition-colors", style.glowA].join(" ")} />
-                                            <div className={["absolute top-10 left-10 h-24 w-24 rounded-full blur-2xl transition-colors", style.glowB].join(" ")} />
+                                                    {/* Glows */}
+                                                    <div className={["absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl transition-colors", style.glowA].join(" ")} />
+                                                    <div className={["absolute top-10 left-10 h-24 w-24 rounded-full blur-2xl transition-colors", style.glowB].join(" ")} />
 
-                                            {/* Center Icon (theme icon), fallback to primary preset icon */}
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="rounded-2xl bg-white/55 p-4 shadow-sm backdrop-blur-md dark:bg-black/20">
-                                                    <div className={["text-neutral-400 transition-colors", style.hoverText].join(" ")}>
-                                                        {previewIcon.icon}
+                                                    {/* Center Icon (theme icon), fallback to primary preset icon */}
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="rounded-2xl bg-white/55 p-4 shadow-sm backdrop-blur-md dark:bg-black/20">
+                                                            <div className={["text-neutral-400 transition-colors", style.hoverText].join(" ")}>
+                                                                {previewIcon.icon}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
 
-                                        {/* Info */}
-                                        <div className="p-6">
-                                            <h3
-                                                className={[
-                                                    "text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors",
-                                                    style.hoverText,
-                                                ].join(" ")}
-                                            >
-                                                {lab.title}
-                                            </h3>
-
-                                            <p className="mt-2 line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400">{lab.description}</p>
-
-                                            {/* Tags chips */}
-                                            <div className="mt-4 flex flex-wrap gap-1.5">
-                                                {tags.slice(0, 4).map((t) => (
-                                                    <span
-                                                        key={t}
-                                                        className="rounded-full border border-neutral-200/70 bg-white/50 px-2 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800/70 dark:bg-neutral-900/40 dark:text-neutral-300"
+                                                {/* Info */}
+                                                <div className="p-6">
+                                                    <h3
+                                                        className={[
+                                                            "text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors",
+                                                            style.hoverText,
+                                                        ].join(" ")}
                                                     >
-                                                        {t}
-                                                    </span>
-                                                ))}
-                                                {tags.length > 4 ? <span className="text-[11px] text-neutral-400">+{tags.length - 4}</span> : null}
-                                            </div>
+                                                        {lab.title}
+                                                    </h3>
 
-                                            {/* CTA follows primary color */}
-                                            <div
-                                                className={[
-                                                    "mt-6 flex items-center gap-2 text-xs font-semibold opacity-0 transform translate-y-2 transition-all",
-                                                    "group-hover:opacity-100 group-hover:translate-y-0",
-                                                    style.badgeText,
-                                                ].join(" ")}
-                                            >
-                                                Run Experiment <ArrowRight className="h-3 w-3" />
-                                            </div>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-                        </div>
+                                                    <p className="mt-2 line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400">{lab.description}</p>
+
+                                                    {/* Tags chips */}
+                                                    <div className="mt-4 flex flex-wrap gap-1.5">
+                                                        {tags.slice(0, 4).map((t) => (
+                                                            <span
+                                                                key={t}
+                                                                className="rounded-full border border-neutral-200/70 bg-white/50 px-2 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800/70 dark:bg-neutral-900/40 dark:text-neutral-300"
+                                                            >
+                                                                {t}
+                                                            </span>
+                                                        ))}
+                                                        {tags.length > 4 ? <span className="text-[11px] text-neutral-400">+{tags.length - 4}</span> : null}
+                                                    </div>
+
+                                                    {/* CTA follows primary color */}
+                                                    <div
+                                                        className={[
+                                                            "mt-6 flex items-center gap-2 text-xs font-semibold opacity-0 transform translate-y-2 transition-all",
+                                                            "group-hover:opacity-100 group-hover:translate-y-0",
+                                                            style.badgeText,
+                                                        ].join(" ")}
+                                                    >
+                                                        Run Experiment <ArrowRight className="h-3 w-3" />
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </motion.div>
+                                    );
+                                })}
+                            </motion.div>
+                        </AnimatePresence>
                     )}
                 </section>
             </div>

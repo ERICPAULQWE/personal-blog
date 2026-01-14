@@ -15,6 +15,18 @@ import {
     X,
     ArrowRight,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+    staggerContainer,
+    fadeInUp,
+    heroSlideLeft,
+    heroSlideRight,
+    heroSlideUp,
+} from "@/components/motion/variants";
+import { AnimatePresence } from "framer-motion";
+import type { Variants } from "framer-motion";
+
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 type NoteFrontmatter = {
     title: string;
@@ -56,6 +68,50 @@ const NOTE_STYLE = {
     badgeGradient: "from-blue-500/20 to-cyan-500/20",
     badgeBorder: "border-blue-500/20",
     badgeText: "text-blue-700 dark:text-blue-300",
+};
+
+/* Sidebar 动画 variants（easeInOut 方案） */
+const sidebarPanel: Variants = {
+    hidden: {
+        opacity: 0,
+        x: -24,
+    },
+    show: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            duration: 0.8,
+            ease: "easeInOut",
+        },
+    },
+    exit: {
+        opacity: 0,
+        x: -24,
+        transition: {
+            duration: 0.45,
+            ease: "easeInOut",
+        },
+    },
+};
+/* ✅ 修复：列表容器不再控制 opacity，避免整体透明导致“文字区透明/圆角失真” */
+const listStagger: Variants = {
+    hidden: {},
+    show: {
+        transition: {
+            staggerChildren: 0.06,
+            delayChildren: 0.02,
+        },
+    },
+};
+
+/* ✅ 卡片自己做入场（opacity/y），保证视觉稳定 */
+const cardIn: Variants = {
+    hidden: { opacity: 0, y: 14 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.6, ease: "easeInOut" },
+    },
 };
 
 export default function NotesClient({ notes }: { notes: NoteItem[] }) {
@@ -145,26 +201,37 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
     return (
         <div className="space-y-12 pb-20">
             {/* Header：对齐 Labs 的结构 */}
-            <section className="space-y-4 py-10 text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+            <motion.section
+                className="space-y-4 py-10 text-center"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+            >
+                <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
                     <BookText className="h-3 w-3" />
                     <span>Knowledge Garden</span>
-                </div>
+                </motion.div>
 
                 <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-                    <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-400">
+                    <motion.span
+                        variants={heroSlideRight}
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-400 inline-block"
+                    >
                         Notes
-                    </span>
-                    <span className="text-neutral-200 dark:text-neutral-800"> / </span>
-                    <span className="text-neutral-900 dark:text-white">Library</span>
+                    </motion.span>
+                    <motion.span
+                        variants={heroSlideLeft}
+                        className="text-neutral-900 dark:text-white inline-block"
+                    >
+                        {" "}
+                        / 笔记
+                    </motion.span>
                 </h1>
 
-                <p className="mx-auto max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-                    这里是我对技术、设计以及数字生活的长期沉淀。
-                </p>
-            </section>
-
-
+                <motion.p variants={heroSlideUp} className="mx-auto max-w-xl text-lg text-neutral-500 dark:text-neutral-400">
+                    系统化沉淀我的学习与思考，持续生长的数字花园。
+                </motion.p>
+            </motion.section>
 
             {/* Layout：对齐 Labs “可折叠 sidebar + main” :contentReference[oaicite:8]{index=8} */}
             <div
@@ -174,7 +241,12 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
                 ].join(" ")}
             >
                 {/* Sidebar */}
-                <aside className="lg:sticky lg:top-24 h-fit">
+                <motion.aside
+                    className="lg:sticky lg:top-24 h-fit"
+                    // 让 Sidebar 的首屏入场跟主内容“同步开始”
+                    initial="hidden"
+                    animate="show"
+                >
                     {sidebarCollapsed ? (
                         <div className="relative">
                             {/* ✅ 只留 1px 锚点：不渲染任何白色圆角矩形 */}
@@ -192,99 +264,108 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
                             </button>
                         </div>
                     ) : (
-                        <div className="glass rounded-3xl border border-neutral-200/60 dark:border-neutral-800/60 p-4">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">分类</div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key="notes-sidebar-panel"
+                                variants={sidebarPanel}
+                                initial="hidden"
+                                animate="show"
+                                exit="exit"
+                                className="glass rounded-3xl border border-neutral-200/60 dark:border-neutral-800/60 p-4"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">分类</div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="text-[11px] font-mono opacity-60">
-                                        {filtered.length}/{notes.length}
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-[11px] font-mono opacity-60">
+                                            {filtered.length}/{notes.length}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSidebarCollapsed(true)}
+                                            className="h-9 w-9 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-center hover:bg-white/60 dark:hover:bg-neutral-800/50 transition"
+                                            aria-label="Collapse sidebar"
+                                            title="Collapse"
+                                        >
+                                            <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                                        </button>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setSidebarCollapsed(true)}
-                                        className="h-9 w-9 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-center hover:bg-white/60 dark:hover:bg-neutral-800/50 transition"
-                                        aria-label="Collapse sidebar"
-                                        title="Collapse"
-                                    >
-                                        <ChevronLeft className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
-                                    </button>
                                 </div>
-                            </div>
 
-                            {/* Quick items */}
-                            <div className="mt-4 space-y-1">
-                                <NavItem
-                                    active={category === "all"}
-                                    label="全部"
-                                    leftIcon={<Sparkles className="h-4 w-4 opacity-70" />}
-                                    right={String(notes.length)}
-                                    onClick={() => setCategory("all")}
-                                />
-                                <NavItem
-                                    active={category === "recent"}
-                                    label="最近"
-                                    leftIcon={<Calendar className="h-4 w-4 opacity-70" />}
-                                    right="30"
-                                    onClick={() => setCategory("recent")}
-                                />
-                            </div>
-
-                            <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
-
-                            {/* Folders */}
-                            <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 px-2">Folders</div>
-                            <div className="mt-2 max-h-[220px] overflow-auto pr-1 space-y-1">
-                                {folderStats.map(({ folder, count }) => (
+                                {/* Quick items */}
+                                <div className="mt-4 space-y-1">
                                     <NavItem
-                                        key={folder}
-                                        active={category === `folder:${folder}`}
-                                        label={folder}
-                                        right={String(count)}
-                                        leftIcon={<Folder className="h-4 w-4 opacity-70" />}
-                                        onClick={() => setCategory(`folder:${folder}`)}
+                                        active={category === "all"}
+                                        label="全部"
+                                        leftIcon={<Sparkles className="h-4 w-4 opacity-70" />}
+                                        right={String(notes.length)}
+                                        onClick={() => setCategory("all")}
                                     />
-                                ))}
-                            </div>
-
-                            <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
-
-                            {/* Tags (collapsed by default like Labs) :contentReference[oaicite:9]{index=9} */}
-                            <button
-                                type="button"
-                                onClick={() => setTagsExpanded((v) => !v)}
-                                className="w-full flex items-center justify-between rounded-2xl px-2 py-2 hover:bg-white/40 dark:hover:bg-neutral-800/30 transition"
-                                aria-expanded={tagsExpanded}
-                            >
-                                <div className="text-xs font-mono uppercase tracking-widest text-neutral-400">Tags</div>
-                                <div className="flex items-center gap-2 text-neutral-400">
-                                    <span className="text-[11px] font-mono opacity-70">{tagStats.length}</span>
-                                    <ChevronDown className={["h-4 w-4 transition-transform", tagsExpanded ? "rotate-180" : ""].join(" ")} />
+                                    <NavItem
+                                        active={category === "recent"}
+                                        label="最近"
+                                        leftIcon={<Calendar className="h-4 w-4 opacity-70" />}
+                                        right="30"
+                                        onClick={() => setCategory("recent")}
+                                    />
                                 </div>
-                            </button>
 
-                            <div
-                                className={[
-                                    "mt-2 overflow-hidden transition-[max-height,opacity] duration-300 ease-out",
-                                    tagsExpanded ? "max-h-[240px] opacity-100" : "max-h-0 opacity-0",
-                                ].join(" ")}
-                            >
-                                <div className="max-h-[240px] overflow-auto pr-1 space-y-1">
-                                    {tagStats.map(({ tag, count }) => (
+                                <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
+
+                                {/* Folders */}
+                                <div className="text-xs font-mono uppercase tracking-widest text-neutral-400 px-2">Folders</div>
+                                <div className="mt-2 max-h-[220px] overflow-auto pr-1 space-y-1">
+                                    {folderStats.map(({ folder, count }) => (
                                         <NavItem
-                                            key={tag}
-                                            active={category === `tag:${tag}`}
-                                            label={tag}
+                                            key={folder}
+                                            active={category === `folder:${folder}`}
+                                            label={folder}
                                             right={String(count)}
-                                            leftIcon={<Hash className="h-4 w-4 opacity-60" />}
-                                            onClick={() => setCategory(`tag:${tag}`)}
+                                            leftIcon={<Folder className="h-4 w-4 opacity-70" />}
+                                            onClick={() => setCategory(`folder:${folder}`)}
                                         />
                                     ))}
                                 </div>
-                            </div>
-                        </div>
+
+                                <div className="my-5 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent dark:via-neutral-800" />
+
+                                {/* Tags */}
+                                <button
+                                    type="button"
+                                    onClick={() => setTagsExpanded((v) => !v)}
+                                    className="w-full flex items-center justify-between rounded-2xl px-2 py-2 hover:bg-white/40 dark:hover:bg-neutral-800/30 transition"
+                                    aria-expanded={tagsExpanded}
+                                >
+                                    <div className="text-xs font-mono uppercase tracking-widest text-neutral-400">Tags</div>
+                                    <div className="flex items-center gap-2 text-neutral-400">
+                                        <span className="text-[11px] font-mono opacity-70">{tagStats.length}</span>
+                                        <ChevronDown className={["h-4 w-4 transition-transform", tagsExpanded ? "rotate-180" : ""].join(" ")} />
+                                    </div>
+                                </button>
+
+                                <div
+                                    className={[
+                                        "mt-2 overflow-hidden transition-[max-height,opacity] duration-300 ease-out",
+                                        tagsExpanded ? "max-h-[240px] opacity-100" : "max-h-0 opacity-0",
+                                    ].join(" ")}
+                                >
+                                    <div className="max-h-[240px] overflow-auto pr-1 space-y-1">
+                                        {tagStats.map(({ tag, count }) => (
+                                            <NavItem
+                                                key={tag}
+                                                active={category === `tag:${tag}`}
+                                                label={tag}
+                                                right={String(count)}
+                                                leftIcon={<Hash className="h-4 w-4 opacity-60" />}
+                                                onClick={() => setCategory(`tag:${tag}`)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
                     )}
-                </aside>
+                </motion.aside>
 
                 {/* Main */}
                 <section className="space-y-6">
@@ -325,95 +406,108 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
                             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">换个关键词，或切换左侧分类/标签试试。</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {filtered.map((note) => {
-                                const tags = safeTags(note);
-
-                                return (
-                                    <Link
-                                        key={note.slug}
-                                        href={`/notes/${note.slug}`}
-                                        className="group relative overflow-hidden rounded-[2rem] glass transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10"
+                        /* ✅ 修复：切换分类/搜索时，列表用 key 重建，避免 whileInView/once 导致新卡片卡在 hidden */
+                            (
+                                <AnimatePresence mode="sync">
+                                    <motion.div
+                                        key={`${category}|${q}`}
+                                        variants={listStagger}
+                                        initial="hidden"
+                                        animate="show"
+                                        exit={{ opacity: 0, y: 6, transition: { duration: 0.2, ease: "easeInOut" } }}
+                                        className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
                                     >
-                                        {/* Preview */}
-                                        <div className={["relative h-44 w-full overflow-hidden bg-gradient-to-br", NOTE_STYLE.previewGradient].join(" ")}>
-                                            {/* Badge */}
-                                            <div className="absolute left-4 top-4 z-20">
-                                                <div
-                                                    className={[
-                                                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md",
-                                                        "bg-white/60 dark:bg-black/20",
-                                                        `bg-gradient-to-r ${NOTE_STYLE.badgeGradient}`,
-                                                        NOTE_STYLE.badgeBorder,
-                                                        NOTE_STYLE.badgeText,
-                                                    ].join(" ")}
-                                                >
-                                                    <BookText className="h-3.5 w-3.5 opacity-90" />
-                                                    <span>Note</span>
-                                                </div>
-                                            </div>
+                                        {filtered.map((note) => {
+                                            const tags = safeTags(note);
 
-                                            {/* Glows */}
-                                            <div className={["absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl transition-colors", NOTE_STYLE.glowA].join(" ")} />
-                                            <div className={["absolute top-10 left-10 h-24 w-24 rounded-full blur-2xl transition-colors", NOTE_STYLE.glowB].join(" ")} />
+                                            return (
+                                                <motion.div key={note.slug} variants={cardIn}>
+                                                    <Link
+                                                        href={`/notes/${note.slug}`}
+                                                        className="block group relative overflow-hidden rounded-[2rem] glass transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10"
+                                                    >
+                                                        {/* Preview */}
+                                                        <div className={["relative h-44 w-full overflow-hidden bg-gradient-to-br", NOTE_STYLE.previewGradient].join(" ")}>
+                                                            {/* Badge */}
+                                                            <div className="absolute left-4 top-4 z-20">
+                                                                <div
+                                                                    className={[
+                                                                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md",
+                                                                        "bg-white/60 dark:bg-black/20",
+                                                                        `bg-gradient-to-r ${NOTE_STYLE.badgeGradient}`,
+                                                                        NOTE_STYLE.badgeBorder,
+                                                                        NOTE_STYLE.badgeText,
+                                                                    ].join(" ")}
+                                                                >
+                                                                    <BookText className="h-3.5 w-3.5 opacity-90" />
+                                                                    <span>Note</span>
+                                                                </div>
+                                                            </div>
 
-                                            {/* Center Icon */}
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="rounded-2xl bg-white/55 p-4 shadow-sm backdrop-blur-md dark:bg-black/20">
-                                                    <div className={["text-neutral-400 transition-colors", NOTE_STYLE.hoverText].join(" ")}>
-                                                        <BookText className="h-8 w-8" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                            {/* Glows */}
+                                                            <div className={["absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl transition-colors", NOTE_STYLE.glowA].join(" ")} />
+                                                            <div className={["absolute top-10 left-10 h-24 w-24 rounded-full blur-2xl transition-colors", NOTE_STYLE.glowB].join(" ")} />
 
-                                        {/* Info */}
-                                        <div className="p-6">
-                                            <h3 className={["text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors", NOTE_STYLE.hoverText].join(" ")}>
-                                                {note.frontmatter.title}
-                                            </h3>
+                                                            {/* Center Icon */}
+                                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                                <div className="rounded-2xl bg-white/55 p-4 shadow-sm backdrop-blur-md dark:bg-black/20">
+                                                                    <div className={["text-neutral-400 transition-colors", NOTE_STYLE.hoverText].join(" ")}>
+                                                                        <BookText className="h-8 w-8" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
-                                            <p className="mt-2 line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400">
-                                                {note.frontmatter.description || "暂无描述…"}
-                                            </p>
+                                                        {/* Info */}
+                                                        <div className="p-6">
+                                                            <h3 className={["text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors", NOTE_STYLE.hoverText].join(" ")}>
+                                                                {note.frontmatter.title}
+                                                            </h3>
 
-                                            <div className="mt-4 flex items-center gap-2 text-xs text-neutral-400">
-                                                <Calendar className="h-3.5 w-3.5" />
-                                                <span className="font-mono">{note.frontmatter.date}</span>
-                                                <span className="mx-2 opacity-40">·</span>
-                                                <span className="font-mono opacity-70">{note.slug}</span>
-                                            </div>
+                                                            <p className="mt-2 line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400">
+                                                                {note.frontmatter.description || "暂无描述…"}
+                                                            </p>
 
-                                            {/* Tags */}
-                                            {tags.length ? (
-                                                <div className="mt-4 flex flex-wrap gap-1.5">
-                                                    {tags.slice(0, 4).map((t) => (
-                                                        <span
-                                                            key={t}
-                                                            className="rounded-full border border-neutral-200/70 bg-white/50 px-2 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800/70 dark:bg-neutral-900/40 dark:text-neutral-300"
-                                                        >
-                                                            {t}
-                                                        </span>
-                                                    ))}
-                                                    {tags.length > 4 ? <span className="text-[11px] text-neutral-400">+{tags.length - 4}</span> : null}
-                                                </div>
-                                            ) : null}
+                                                            <div className="mt-4 flex items-center gap-2 text-xs text-neutral-400">
+                                                                <Calendar className="h-3.5 w-3.5" />
+                                                                <span className="font-mono">{note.frontmatter.date}</span>
+                                                                <span className="mx-2 opacity-40">·</span>
+                                                                <span className="font-mono opacity-70">{note.slug}</span>
+                                                            </div>
 
-                                            {/* CTA */}
-                                            <div
-                                                className={[
-                                                    "mt-6 flex items-center gap-2 text-xs font-semibold opacity-0 transform translate-y-2 transition-all",
-                                                    "group-hover:opacity-100 group-hover:translate-y-0",
-                                                    NOTE_STYLE.badgeText,
-                                                ].join(" ")}
-                                            >
-                                                Open Note <ArrowRight className="h-3 w-3" />
-                                            </div>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-                        </div>
+                                                            {/* Tags */}
+                                                            {tags.length ? (
+                                                                <div className="mt-4 flex flex-wrap gap-1.5">
+                                                                    {tags.slice(0, 4).map((t) => (
+                                                                        <span
+                                                                            key={t}
+                                                                            className="rounded-full border border-neutral-200/70 bg-white/50 px-2 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800/70 dark:bg-neutral-900/40 dark:text-neutral-300"
+                                                                        >
+                                                                            {t}
+                                                                        </span>
+                                                                    ))}
+                                                                    {tags.length > 4 ? <span className="text-[11px] text-neutral-400">+{tags.length - 4}</span> : null}
+                                                                </div>
+                                                            ) : null}
+
+                                                            {/* CTA */}
+                                                            <div
+                                                                className={[
+                                                                    "mt-6 flex items-center gap-2 text-xs font-semibold opacity-0 transform translate-y-2 transition-all",
+                                                                    "group-hover:opacity-100 group-hover:translate-y-0",
+                                                                    NOTE_STYLE.badgeText,
+                                                                ].join(" ")}
+                                                            >
+                                                                Open Note <ArrowRight className="h-3 w-3" />
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </motion.div>
+                                </AnimatePresence>
+                            )
                     )}
                 </section>
             </div>
