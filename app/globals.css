@@ -1,5 +1,6 @@
 ﻿@import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@plugin "tailwindcss-animate";
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* =========================================
@@ -12,6 +13,9 @@
     --border: rgba(0, 0, 0, 0.08);
     --selection: rgba(0, 125, 250, 0.2);
     --radius: 1rem;
+    --reading-font-size: 1.0625rem; /* 17px */
+    --reading-line-height: 1.85;
+    --reading-font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 html.dark {
@@ -189,6 +193,19 @@ h1, h2, h3, h4 {
 .callout[data-callout="example"] {
     border-left-color: #af52de;
     background-color: rgba(175, 82, 222, 0.05);
+}
+
+/* Markdown阅读区 */
+/* 只影响 Markdown 正文 */
+.reading-prose {
+    font-size: var(--reading-font-size);
+    line-height: var(--reading-line-height);
+    font-family: var(--reading-font-family);
+}
+
+/* 让 prose 内段落/列表也跟随（更一致） */
+.reading-prose :where(p, li) {
+    line-height: var(--reading-line-height);
 }
 
 /* 折叠面板 (Details) 的平滑处理 */

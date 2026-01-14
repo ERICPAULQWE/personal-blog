@@ -7,6 +7,7 @@ import { NotesLayoutClient } from "../../../components/notes-layout-client";
 import { Calendar, User } from "lucide-react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { ReadingToolbar } from "@/components/reading/reading-toolbar"; 
 
 // 生成静态路径 (SSG)
 export function generateStaticParams() {
@@ -34,6 +35,7 @@ export default async function NoteDetailPage({
     const toc = await getTableOfContents(note.content);
 
     return (
+        <>
         <NotesLayoutClient tree={tree} toc={toc}>
             <Link
                 href="/notes"
@@ -84,5 +86,7 @@ export default async function NoteDetailPage({
                 </footer>
             </div>
         </NotesLayoutClient>
+        <ReadingToolbar />
+        </>
     );
 }

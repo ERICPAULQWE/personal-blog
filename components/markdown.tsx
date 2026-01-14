@@ -3,6 +3,7 @@ import { memo } from "react";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import remarkMath from "remark-math";
 import remarkRehype from "remark-rehype";
 import rehypeRaw from "rehype-raw";
@@ -120,6 +121,7 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
         const file = unified()
             .use(remarkParse)
             .use(remarkGfm)
+            .use(remarkBreaks)   // ✅ 关键：单换行 => <br>
             .use(remarkMath)
             .use(remarkSmartImage) // 使用强化版图片插件
             .use(remarkObsidianCallout)
@@ -137,8 +139,7 @@ export const Markdown = memo(function Markdown({ source }: { source: string }) {
 
     return (
         <article
-            className="prose prose-base dark:prose-invert max-w-none antialiased"
-            style={{ lineHeight: '1.8' } as any}
+            className="reading-prose prose prose-base dark:prose-invert max-w-none antialiased"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
     );
