@@ -206,7 +206,7 @@ export default function AboutPage() {
                         </div>
 
                         <h1 className="mt-8 text-5xl font-bold tracking-tight md:text-7xl">
-                            <span className="text-neutral-900 dark:text-white">Paul Eric</span>
+                            <span className="text-neutral-900 dark:text-white">Eric He</span>
                             <span className="text-neutral-300 dark:text-neutral-700"> — </span>
                             <span className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
                                 Systems Builder
