@@ -2,18 +2,20 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
-import { SessionProvider } from "next-auth/react"; // 新增
+import { SessionProvider } from "next-auth/react";
 import { Moon, Sun } from "lucide-react";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return (
-        // 新增 SessionProvider 包裹，否则 site-header 会报错
+        // SessionProvider 需要包裹，保持你原本逻辑
         <SessionProvider>
             <NextThemesProvider
                 attribute="class"
                 defaultTheme="system"
                 enableSystem
                 disableTransitionOnChange
+            // storageKey 默认就是 "theme"，不写也会持久化；写上更显式也可以：
+            // storageKey="theme"
             >
                 {children}
             </NextThemesProvider>
@@ -21,19 +23,55 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-// 保持你之前的 ThemeToggle 不变
+/**
+ * 真·全局主题切换按钮：
+ * - 默认跟随系统（theme === "system"）
+ * - 点击后强制 light/dark，并持久化
+ * - 用 resolvedTheme 让 system 模式下也能正确判断当前实际主题
+ */
 export function ThemeToggle() {
-    const { setTheme, theme } = useTheme();
+    const { setTheme, theme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // 避免 hydration mismatch：在客户端挂载前先不渲染图标状态
+    if (!mounted) {
+        return (
+            <button
+                type="button"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
+                aria-label="Toggle theme"
+            />
+        );
+    }
+
+    const current = resolvedTheme; // "light" | "dark"
+    const toggleTheme = () => {
+        setTheme(current === "dark" ? "light" : "dark");
+    };
+
+    // 可选：给个更准确的 aria-label（尤其 theme === system 时）
+    const label =
+        theme === "system"
+            ? `Toggle theme (system, currently ${current})`
+            : `Toggle theme (currently ${current})`;
 
     return (
         <button
             type="button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
-            aria-label="Toggle theme"
+            onClick={toggleTheme}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/50 bg-white/50 transition-all hover:bg-white hover:shadow-md dark:border-neutral-800/50 dark:bg-neutral-900/50 dark:hover:bg-neutral-800"
+            aria-label={label}
         >
-            <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500" />
-            <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-blue-400" />
+            {/* 用 resolvedTheme 来决定显示哪个图标（更直观、更不容易错） */}
+            {current === "dark" ? (
+                <Moon className="h-[18px] w-[18px] text-blue-400" />
+            ) : (
+                <Sun className="h-[18px] w-[18px] text-amber-500" />
+            )}
         </button>
     );
 }

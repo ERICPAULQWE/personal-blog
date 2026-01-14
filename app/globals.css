@@ -1,5 +1,6 @@
 ﻿@import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* =========================================
    视觉变量定义 - 苹果风格色调

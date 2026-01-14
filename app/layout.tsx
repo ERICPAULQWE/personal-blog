@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import { ThemeProvider } from "../components/theme-provider";
@@ -8,6 +8,10 @@ export const metadata: Metadata = {
     metadataBase: new URL("https://hfy-blog.site"),
     title: "ERIC's Blog",
     description: "Learning notes & interactive labs.",
+};
+
+export const viewport: Viewport = {
+    colorScheme: "light dark",
 };
 
 export default function RootLayout({
