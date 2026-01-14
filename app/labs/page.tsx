@@ -632,7 +632,7 @@ export default function LabsPage() {
                             ) : null}
                         </div>
 
-                        <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                        <div className="text-sm text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
                             当前： <span className="text-neutral-900 dark:text-white font-medium">{selectedLabel}</span>
                         </div>
                     </div>
