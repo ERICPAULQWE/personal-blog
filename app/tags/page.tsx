@@ -32,7 +32,7 @@ export default function TagsPage() {
     return (
         <div className="space-y-12 pb-20">
             {/* Header */}
-            <section className="text-center space-y-4 py-10">
+            <section className="space-y-4 py-10 text-center">
                 {/* Topic Index（按你要求：浅绿色） */}
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                     <Layers className="h-3 w-3 text-emerald-500 dark:text-emerald-300" />
@@ -40,14 +40,14 @@ export default function TagsPage() {
                 </div>
 
                 {/* 标题：Tags 蓝绿色渐变 */}
-                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
                     <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent dark:from-teal-400 dark:to-cyan-400">
                         Tags
                     </span>
                     <span className="text-neutral-900 dark:text-white"> / Explore</span>
                 </h1>
 
-                <p className="text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
+                <p className="mx-auto max-w-xl text-lg text-neutral-500 dark:text-neutral-400">
                     通过话题标签快速定位笔记。这里汇集了 {tags.length} 个不同维度的知识节点。
                 </p>
             </section>

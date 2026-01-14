@@ -106,20 +106,20 @@ export default function ArchivePage() {
     return (
         <div className="space-y-12 pb-20">
             {/* Header：浅黄 pill + 黄橙渐变标题（主题色=黄） */}
-            <section className="text-center space-y-4 py-10">
+            <section className="space-y-4 py-10 text-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-400/15 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-300">
                     <Clock className="h-3 w-3 text-amber-500 dark:text-amber-300" />
                     <span>Time Machine</span>
                 </div>
 
-                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
                     <span className="bg-gradient-to-r from-orange-500 to-yellow-400 bg-clip-text text-transparent dark:from-orange-400 dark:to-yellow-300">
                         Archive
                     </span>
                     <span className="text-neutral-900 dark:text-white"> / 归档</span>
                 </h1>
 
-                <p className="text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
+                <p className="mx-auto max-w-xl text-lg text-neutral-500 dark:text-neutral-400">
                     按照时间轴回顾所有的思考与记录（笔记 + 实验）。
                 </p>
             </section>

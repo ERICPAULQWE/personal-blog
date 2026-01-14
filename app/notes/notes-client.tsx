@@ -143,8 +143,8 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
     }, [category]);
 
     return (
-        <div className="space-y-12">
-            {/* Header：对齐 Labs 的结构 :contentReference[oaicite:7]{index=7} */}
+        <div className="space-y-12 pb-20">
+            {/* Header：对齐 Labs 的结构 */}
             <section className="space-y-4 py-10 text-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400">
                     <BookText className="h-3 w-3" />
@@ -163,6 +163,8 @@ export default function NotesClient({ notes }: { notes: NoteItem[] }) {
                     这里是我对技术、设计以及数字生活的长期沉淀。
                 </p>
             </section>
+
+
 
             {/* Layout：对齐 Labs “可折叠 sidebar + main” :contentReference[oaicite:8]{index=8} */}
             <div

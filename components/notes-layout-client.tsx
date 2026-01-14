@@ -229,7 +229,7 @@ export function NotesLayoutClient({
             ) : null}
 
             {/* 主内容：永远不为两侧抽屉让位 => 永远不被压缩 */}
-            <div className="w-full px-4 py-6 md:px-6">
+            <div className="w-full px-4 md:px-6">
                 {children}
             </div>
         </div>
