@@ -1,8 +1,8 @@
 ﻿---
-title: "lab提交规范"
+title: "Labs 提交规范"
 date: "2026-01-14"
-description: "lab提交规范的详细介绍"
-tags: ["React", "Next.js"]
+description: "Labs 组件开发内容的提交规范详细介绍"
+tags: ["React", "Next.js","Labs"]
 status: "published" # published | draft
 ---
 
