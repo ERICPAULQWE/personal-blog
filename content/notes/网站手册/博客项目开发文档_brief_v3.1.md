@@ -170,3 +170,7 @@ NEXTAUTH_URL=线上域名（Part B 中提到需要配置）
 - **发布失败（500）**：查看服务端日志（常见是 GitHub Token 权限不足、路径非法、图片 base64 错）
 - **发布成功但前台不更新**：检查 Vercel 是否重新构建、是否缓存、是否需要 revalidate/webhook
 - **搜索不更新**：属于 build-time 搜索的正常表现——需要重新构建后索引才更新
+
+------------------------------------------------------------------------
+
+© Personal Blog · Development Documentation
