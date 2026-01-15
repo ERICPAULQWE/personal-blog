@@ -1,8 +1,8 @@
 ---
 title: "开发与使用手册"
-date: "2026-01-14"
-description: "本博客系统的详细介绍"
-tags: ["React", "Next.js"]
+date: "2026-01-15"
+description: "全站搜索系统的整体设计理念、功能结构、交互逻辑与扩展规范的详细介绍"
+tags: ["React", "Next.js","网站开发"]
 status: "published" # published | draft
 ---
 

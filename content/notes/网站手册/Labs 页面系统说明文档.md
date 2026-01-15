@@ -2,9 +2,11 @@
 title: "Labs 页面系统说明文档"
 date: "2026-01-14"
 description: "Labs 页面系统的整体设计理念、功能结构、交互逻辑与扩展规范"
-tags: ["React", "Next.js","Labs"]
+tags: ["React", "Next.js","Labs","网站开发"]
 status: "published" # published | draft
 ---
+
+# Labs 页面系统说明文档
 
 > 本文档用于说明 **Labs 页面系统**
 > 的整体设计理念、功能结构、交互逻辑、匹配规则与扩展规范。\

@@ -6,7 +6,7 @@ tags: ["React", "Next.js","Labs"]
 status: "published" # published | draft
 ---
 
----
+# Labs 提交规范
 
 ## 1) Admin 发布器到底做了什么
 

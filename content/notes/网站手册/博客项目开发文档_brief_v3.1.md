@@ -1,3 +1,11 @@
+---
+title: "personal-blog（个人博客与交互实验室）· 简略版开发与使用手册"
+date: "2026-01-15"
+description: "网站手册，面向非专业读者的“整体理解版”"
+tags: ["React", "Next.js","网站开发"]
+status: "published" # published | draft
+---
+
 # personal-blog（个人博客与交互实验室）· 简略版开发与使用手册
 
 > 面向非专业读者的“整体理解版”。  
