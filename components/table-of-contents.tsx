@@ -13,15 +13,15 @@ interface TocItem {
 
 interface TableOfContentsProps {
     toc: TocItem[];
-    isCollapsed: boolean;      // 改为外部传入
-    onToggle: () => void;     // 改为外部传入
+    isCollapsed: boolean; // 改为外部传入
+    onToggle: () => void; // 改为外部传入
 }
 
 export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfContentsProps) {
     const [activeId, setActiveId] = useState<string>("");
     const items = useMemo(() => toc || [], [toc]);
 
-    // ✅ 新增：目录滚动容器 ref，用来把高亮项滚到中间
+    // ✅ 目录滚动容器 ref，用来把高亮项滚到中间
     const tocContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -39,7 +39,6 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
             if (fromHash) return fromHash;
 
             // 2) 否则按当前滚动位置找“最后一个在阈值线之上”的 heading
-            // 阈值可以按你的 UI 调整：越大越“提前”切换
             const threshold = 120;
 
             const candidates: { id: string; top: number }[] = [];
@@ -51,14 +50,12 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
                 candidates.push({ id, top });
             }
 
-            // 找 top <= threshold 的最后一个
             const passed = candidates
                 .filter((c) => c.top <= threshold)
                 .sort((a, b) => a.top - b.top);
 
             if (passed.length > 0) return passed[passed.length - 1].id;
 
-            // 3) 顶部时兜底：高亮第一个
             return items[0]?.url.replace(/^#/, "") || "";
         };
 
@@ -79,8 +76,6 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
             if (element) observer.observe(element);
         });
 
-        // ✅ 关键修复：首次挂载/首次打开目录时，立即计算一次 activeId
-        // 用 rAF 保证 DOM 已经绘制完、位置是最新的
         const raf = requestAnimationFrame(() => {
             const id = computeActiveId();
             if (id) setActiveId(id);
@@ -92,7 +87,7 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
         };
     }, [items]);
 
-    // ✅ 新增：让蓝色高亮项自动滚到目录栏正中心
+    // ✅ 让蓝色高亮项自动滚到目录栏正中心（无 any 版本）
     useEffect(() => {
         if (!activeId) return;
         if (isCollapsed) return;
@@ -100,13 +95,12 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
         const container = tocContainerRef.current;
         if (!container) return;
 
-        // 通过 data-toc-id 精确定位当前高亮的目录项（不会影响你的 className 逻辑）
-        const safeId =
-            typeof (window as any).CSS !== "undefined" && typeof (window as any).CSS.escape === "function"
-                ? (window as any).CSS.escape(activeId)
-                : activeId.replace(/["\\]/g, "\\$&"); // 简单兜底，避免 selector 崩掉
+        // Type-safe: CSS.escape 在 lib.dom.d.ts 中存在（现代浏览器），但这里仍做运行时判断
+        const escapeFn: ((s: string) => string) | undefined =
+            typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape : undefined;
 
-        const activeEl = container.querySelector<HTMLElement>(`[data-toc-id="${safeId}"]`);
+        const selectorId = escapeFn ? escapeFn(activeId) : activeId.replace(/["\\]/g, "\\$&");
+        const activeEl = container.querySelector<HTMLElement>(`[data-toc-id="${selectorId}"]`);
         if (!activeEl) return;
 
         const raf = requestAnimationFrame(() => {
@@ -178,7 +172,15 @@ export function TableOfContents({ toc = [], isCollapsed, onToggle }: TableOfCont
                                     )}
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        document.getElementById(item.url.replace(/^#/, ""))?.scrollIntoView({ behavior: "smooth" });
+
+                                        const el = document.getElementById(id);
+                                        if (!el) return;
+
+                                        // 更新地址栏 hash（不刷新页面、不触发默认跳转）
+                                        history.replaceState(null, "", item.url);
+
+                                        // 平滑滚动到对应标题
+                                        el.scrollIntoView({ behavior: "smooth" });
                                     }}
                                 >
                                     {isActive && <div className="absolute -left-3 h-1 w-1 rounded-full bg-blue-500" />}
