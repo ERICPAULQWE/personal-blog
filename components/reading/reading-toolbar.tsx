@@ -13,6 +13,8 @@ import {
 import { useReadingSettings } from "./use-reading-settings";
 import { FontSizeStep, LineHeightStep,ReadingFont } from "@/lib/reading-settings";
 import { AnimatePresence, motion } from "framer-motion";
+import { IosSwitch } from "@/components/ui/ios-switch";
+
 
 export function ReadingToolbar() {
     const [open, setOpen] = useState(false);
@@ -130,6 +132,28 @@ export function ReadingToolbar() {
                                     <SelectItem value="mono">等宽</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+                        {/* 自动上色 */}
+                        <div className="h-2.5" />
+                        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-800/70 bg-white/60 dark:bg-neutral-900/40 p-3">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="text-xs text-neutral-700 dark:text-neutral-200">
+                                        Markdown 自动上色
+                                    </div>
+                                    <div className="mt-1 text-[10px] text-neutral-400">
+                                        H3 蓝 / H4 紫 / H5 深绿，Strong 粉红
+                                    </div>
+                                </div>
+
+                                <IosSwitch
+                                    checked={settings.mdAutoColor}
+                                    onCheckedChange={(next) =>
+                                        setSettings((p) => ({ ...p, mdAutoColor: next }))
+                                    }
+                                    aria-label="Markdown 自动上色"
+                                />
+                            </div>
                         </div>
                     </motion.div>
                 )}

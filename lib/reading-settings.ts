@@ -7,12 +7,14 @@ export type ReadingSettings = {
     fontSize: FontSizeStep;      // 1-5，3=默认舒适
     lineHeight: LineHeightStep;  // 1-5，3=默认舒适
     font: ReadingFont;
+    mdAutoColor: boolean; // Markdown 自动上色开关
 };
 
 export const DEFAULT_READING_SETTINGS: ReadingSettings = {
     fontSize: 3,
     lineHeight: 3,
     font: "system",
+    mdAutoColor: true, // 默认开启
 };
 
 export const FONT_SIZE_MAP: Record<FontSizeStep, string> = {

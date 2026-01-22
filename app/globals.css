@@ -208,6 +208,29 @@ h1, h2, h3, h4 {
     line-height: var(--reading-line-height);
 }
 
+/* =========================================
+   Markdown 自动上色（可被阅读设置开关关闭）
+   通过 <html data-md-autocolor="1|0"> 控制
+   ========================================= */
+
+html[data-md-autocolor="1"] .reading-prose h3 {
+    color: #0071e3 !important; /* 蓝 */
+}
+
+html[data-md-autocolor="1"] .reading-prose h4 {
+    color: #af52de !important; /* 紫 */
+}
+
+html[data-md-autocolor="1"] .reading-prose h5 {
+    color: #0f7b3a !important; /* 深绿（可按喜好换更深） */
+}
+
+html[data-md-autocolor="1"] .reading-prose strong {
+    color: #ff7ab6 !important; /* 粉红 */
+    font-weight: 700;
+}
+
+
 /* 折叠面板 (Details) 的平滑处理 */
 details.callout > summary {
     list-style: none;
