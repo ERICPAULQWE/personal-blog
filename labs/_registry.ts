@@ -66,4 +66,12 @@ export const labs: Lab[] = [
         tags: ["Algorithm", "React", "Visualization"], // 分类标签
         fullScreen: false, // 混合模式设置为 false，组件将在舞台区域展示
     },
+    {
+        slug: "math-limits-chapter-1",
+        title: "第一章：函数与极限（交互笔记）",
+        description: "重构微积分第一章笔记，包含邻域可视化、ε-N 语言动态演示及重要极限的数值逼近实验。",
+        date: "2026-01-22",
+        tags: ["Math", "Calculus", "Visualization", "Note"],
+        fullScreen: true, 
+    },
 ];

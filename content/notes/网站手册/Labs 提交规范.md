@@ -49,7 +49,7 @@ status: "published" # published | draft
 ### Step B：选模式
 
 * **混合模式**：上方 React 组件 + 下方 Markdown 文档
-* **纯 React 全屏**：沉浸式应用（更适合工具/仪表盘/Canvas）
+* **纯 React 全屏**：沉浸式应用（更适合工具/仪表盘/Canvas/独立交互笔记）
 
 > 选择模式会写入 registry 的 `fullScreen` 字段（全屏为 `true`）。
 
@@ -102,6 +102,50 @@ export default function MyLab() { ... }
 ```
 
 即使你的系统有“自动补”，也建议你主动写好（更清晰、更少歧义）。
+
+### 3.3 在 Labs 组件中复用 Markdown 组件的指南（如果你需要使用markdown渲染的话）
+你可以在任何 Lab 组件（例如 labs/counter/index.tsx）中直接导入并使用该组件。
+
+示例代码：
+
+TypeScript
+// labs/counter/index.tsx
+"use client";
+
+import React from "react";
+// 1. 引入你现有的 Markdown 组件
+import { Markdown } from "@/components/markdown";
+
+export default function CounterLab() {
+  // 定义包含 LaTeX 的 Markdown 字符串
+  const formula = `
+  ### 核心公式
+  这里演示了如何在 React 组件中渲染数学公式：
+  
+  行内公式：$E = mc^2$
+  
+  块级公式：
+  $$
+  f(x) = \\int_{-\\infty}^{\\infty} \\hat f(\\xi)\\,e^{2\\pi i \\xi x} \\,d\\xi
+  $$
+  `;
+
+  return (
+    <div className="p-4 space-y-4">
+      <h2 className="text-2xl font-bold">计数器实验</h2>
+      
+      {/* 2. 像使用普通 React 组件一样使用它 */}
+      <div className="bg-white dark:bg-neutral-800 p-6 rounded-xl border border-neutral-200 dark:border-neutral-700">
+        <Markdown source={formula} />
+      </div>
+      
+      {/* 你的其他交互组件 */}
+      <button className="px-4 py-2 bg-blue-500 text-white rounded">
+        Count +1
+      </button>
+    </div>
+  );
+}
 
 ---
 
