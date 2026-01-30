@@ -11,14 +11,19 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useReadingSettings } from "./use-reading-settings";
-import { FontSizeStep, LineHeightStep,ReadingFont } from "@/lib/reading-settings";
+import { FontSizeStep, LineHeightStep, ReadingFont } from "@/lib/reading-settings";
 import { AnimatePresence, motion } from "framer-motion";
 import { IosSwitch } from "@/components/ui/ios-switch";
-
+import { useImmersive } from "./immersive-context";
 
 export function ReadingToolbar() {
+    const { immersive } = useImmersive();
+
+    // ✅ Hooks 必须始终以同样顺序执行：不能放在 return null 后面
     const [open, setOpen] = useState(false);
     const { settings, setSettings, reset } = useReadingSettings();
+
+    if (immersive) return null;
 
     return (
         <div className="fixed bottom-6 right-6 w-[360px] flex flex-col items-end">
