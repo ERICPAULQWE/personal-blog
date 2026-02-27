@@ -74,4 +74,12 @@ export const labs: Lab[] = [
         tags: ["Math", "Calculus", "Visualization", "Note"],
         fullScreen: true, 
     },
+    {
+        slug: "Study-calendar",
+        title: "考研规划",
+        description: "考研的整体规划，复习安排",
+        date: "2026-02-27",
+        tags: ["Math", "Calendar", "Tool", "dsp","考研"],
+        fullScreen: true,
+    },
 ];
