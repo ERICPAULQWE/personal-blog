@@ -15,7 +15,7 @@ import {
     ArrowRight,
     BookText,
     Beaker,
-    Hash,
+    GraduationCap,
     RefreshCcw,
     Clock,
     FileText
@@ -519,34 +519,145 @@ function MasonryFeed() {
     );
 }
 
-// --- 5. 随机 Tags 组件 ---
-function RandomTagsCloud() {
-    const noteTags = [
-        "信号与系统", "DSP", "数字信号处理",
-        "通信原理", "高频电子线路",
-        "信息论", "微机原理", "算法",
-        "React", "Next.js", "Obsidian"
-    ];
+// --- 6. 考研规划快捷入口（主页卡片：倒计时 + 动态进度）---
+function ExamPlanShortcutCard() {
+    // 你可以按真实初试日期调整（示例：2026-12-21）
+    const EXAM_DATE = new Date("2026-12-21T00:00:00+08:00");
+    // 进度起点：建议设为你正式开始备考的日期（示例：今天）
+    const START_DATE = new Date("2026-02-27T00:00:00+09:00");
+
+    const planLab = labs.find((l) => l.slug === "Study-calendar");
+    const title = planLab?.title ?? "考研规划";
+    const desc = planLab?.description ?? "考研的整体规划，复习安排";
+
+    const [now, setNow] = useState<Date>(() => new Date());
+
+    useEffect(() => {
+        const t = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(t);
+    }, []);
+
+    // 倒计时（天）
+    const msLeft = EXAM_DATE.getTime() - now.getTime();
+    const daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+
+    // 进度（0~1）
+    const total = EXAM_DATE.getTime() - START_DATE.getTime();
+    const passed = now.getTime() - START_DATE.getTime();
+    const raw = total <= 0 ? 0 : passed / total;
+    const progress = Math.max(0, Math.min(1, raw));
+    const progressPct = Math.round(progress * 100);
+
+    // 微交互：进度条“呼吸光泽”
+    const shimmerVariants: Variants = {
+        hidden: { x: "-60%", opacity: 0.0 },
+        show: {
+            x: "140%",
+            opacity: 0.25,
+            transition: { duration: 1.6, ease: [0.16, 1, 0.3, 1], repeat: Infinity, repeatDelay: 0.6 }
+        }
+    };
 
     return (
-        <div className="flex h-full flex-col justify-between p-6">
-            <div className="flex items-center gap-2 mb-4 text-orange-500">
-                <Hash className="h-5 w-5" />
-                <span className="text-xs font-bold uppercase">Note Tags</span>
+        <TiltCard
+            href="/labs/Study-calendar"
+            gradient="from-emerald-500/25 to-sky-500/25"
+            className="bg-white/70 dark:bg-black/35 backdrop-blur-xl"
+        >
+            <div className="relative overflow-hidden p-6 h-full">
+                {/* 苹果风：柔和层次光晕 */}
+                <div className="pointer-events-none absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-20 -left-16 h-60 w-60 rounded-full bg-sky-500/10 blur-3xl" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/35 to-transparent dark:from-white/5" />
+
+                {/* 右上角 D-xxx */}
+                <div className="absolute right-5 top-5">
+                    <div className="rounded-full border border-emerald-200/70 dark:border-emerald-800/70 bg-white/60 dark:bg-black/20 px-3 py-1 backdrop-blur-md">
+                        <span className="text-base font-semibold tracking-tight text-emerald-500 dark:text-emerald-300">
+                            {daysLeft}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 ring-1 ring-emerald-500/20">
+                        <GraduationCap className="h-6 w-6" />
+                    </div>
+
+                    <span className="text-[10px] font-mono text-emerald-700/80 dark:text-emerald-300/80 uppercase tracking-widest border border-emerald-200/70 dark:border-emerald-800/70 rounded-full px-3 py-1 bg-emerald-50/60 dark:bg-emerald-500/10">
+                        2026
+                    </span>
+                </div>
+
+                <div className="mb-5">
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                        {title}
+                    </h2>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                        {desc}
+                    </p>
+                </div>
+
+                {/* Progress */}
+                <div className="mb-5">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                            学习进度
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-600 dark:text-neutral-300">
+                            {progressPct}%
+                        </span>
+                    </div>
+
+                    <div className="relative h-2 rounded-full bg-neutral-200/70 dark:bg-white/10 overflow-hidden">
+                        {/* 填充条：使用 motion 动画宽度变化 */}
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPct}%` }}
+                            transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                            className="h-full rounded-full bg-emerald-500/60 dark:bg-emerald-400/50"
+                        />
+
+                        {/* 光泽 shimmer（苹果风细节） */}
+                        <motion.div
+                            variants={shimmerVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="absolute top-0 h-full w-1/3 rounded-full bg-white/60 dark:bg-white/25 blur-[1px]"
+                        />
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                            {START_DATE.toLocaleDateString()}
+                        </span>
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                            {EXAM_DATE.toLocaleDateString()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
+                        {planLab?.tags?.slice(0, 3).map((t) => (
+                            <span key={t} className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                                #{t}
+                            </span>
+                        ))}
+                    </div>
+
+                    <motion.div
+                        whileHover={{ x: 3 }}
+                        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                        className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-300"
+                    >
+                        开始规划 <ArrowRight className="h-3 w-3" />
+                    </motion.div>
+                </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-                {noteTags.map((tag) => (
-                    <Link key={tag} href={`/tags/${tag}`}>
-                        <div className="px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-white hover:shadow-md dark:hover:bg-neutral-700 transition-all cursor-pointer">
-                            {tag}
-                        </div>
-                    </Link>
-                ))}
-            </div>
-            <div className="mt-auto pt-4 text-right">
-                <span className="text-[10px] text-neutral-400 uppercase tracking-widest">More Notes →</span>
-            </div>
-        </div>
+        </TiltCard>
     );
 }
 
@@ -565,7 +676,7 @@ export default function HomePage() {
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-4 gap-6 md:h-[340px]"
+                    className="grid grid-cols-1 md:grid-cols-4 gap-6 md:auto-rows-fr"
                 >
 
                     {/* 1. Notes (Left, Large) */}
@@ -623,11 +734,11 @@ export default function HomePage() {
                         </TiltCard>
                     </motion.div>
 
-                    {/* 3. Random Tags (Right) */}
+                    {/* 3. Exam Plan (Right) */}
                     <motion.div variants={fadeInUp} className="md:col-span-1">
-                        <TiltCard gradient="from-orange-500/30 to-red-500/30" className="bg-white dark:bg-black/40">
-                            <RandomTagsCloud />
-                        </TiltCard>
+                        <div className="h-full min-h-[220px]">
+                            <ExamPlanShortcutCard />
+                        </div>
                     </motion.div>
                 </motion.div>
 
