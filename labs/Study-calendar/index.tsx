@@ -417,6 +417,20 @@ function clamp(n: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, n));
 }
 
+function getWeekTemporalState(week: Week, today: Date): "past" | "current" | "future" {
+    const start = parseISODate(week.weekStartISO);
+    const end = parseISODate(week.weekEndISO);
+    if (today < start) return "future";
+    if (today > end) return "past";
+    return "current";
+}
+
+function getWeekStatusLabel(state: "past" | "current" | "future"): string {
+    if (state === "past") return "已结束";
+    if (state === "current") return "进行中";
+    return "未开始";
+}
+
 function safeJsonParse<T>(str: string, fallback: T): T {
     try {
         return JSON.parse(str) as T;
@@ -484,7 +498,7 @@ async function tryClipboardWrite(text: string): Promise<ClipboardResult> {
 // Plan Data
 // -----------------------------
 
-const PLAN_START_ISO = "2026-02-27";
+const PLAN_START_ISO = "2026-03-02";
 const EXAM_DATE_ISO = "2026-12-21";
 
 const phases: Array<{ id: string; name: string; weeks: [number, number]; color: string; tip: string }> = [
@@ -501,16 +515,37 @@ function getPhaseForWeek(weekNo: number) {
     return phases[0];
 }
 
+const MATH_LECTURE_PLAN: Record<number, string> = {
+    1: "张宇30讲：高数 L1–2（2讲）+ 对应基础题",
+    2: "张宇30讲：高数 L3–4（2讲）+ 对应基础题",
+    3: "张宇30讲：高数 L5–6（2讲）+ 对应基础题",
+    4: "张宇30讲：高数 L7–8（2讲）+ 对应基础题（周末做一次小测 60–90min）",
+    5: "张宇30讲：高数 L9–10（2讲）+ 对应基础题",
+    6: "张宇30讲：高数 L11–12（2讲）+ 对应基础题",
+    7: "张宇30讲：高数 L13–14（2讲）+ 对应基础题",
+    8: "张宇30讲：高数 L15–16（2讲）+ 对应基础题",
+    9: "张宇30讲：线代 L17–18（2讲）+ 对应基础题",
+    10: "张宇30讲：线代 L19–20（2讲）+ 对应基础题",
+    11: "张宇30讲：线代 L21–22（2讲）+ 对应基础题",
+    12: "张宇30讲：线代 L23–24（2讲）+ 对应基础题",
+    13: "张宇30讲：概率论 L25–26（2讲）+ 对应基础题",
+    14: "张宇30讲：概率论 L27–28（2讲）+ 对应基础题",
+    15: "张宇30讲：概率论 L29–30（2讲）+ 对应基础题",
+    16: "张宇30讲一轮收尾：高数/线代/概率论回看薄弱讲 + 1000题基础二刷",
+    17: "张宇30讲一轮复盘：按专题补弱（极限 / 线代计算 / 概率公式）+ 错题清零",
+    18: "张宇30讲一轮验收：做一次阶段自测 + 回归薄弱模块",
+};
+
 const weeklyOverrides: Record<number, Partial<WeekPlan>> = {
     1: {
         subjects: {
-            math: "高数30讲 L1–2 + 1000题基础；线代30讲 L1–2 + 1000题基础",
+            math: "张宇30讲：高数 L1–2（2讲）+ 对应基础题；其余时间用于 1000 题基础与消化。",
             english: "红宝书2单元；阅读100（基础）3篇精读；拆分与组合 1–2节",
             signals: "手写笔记第1章 + 一点通对应；960题本章起步",
             politics: "不安排（占位：保持作息与复盘日）",
         },
         outputs: [
-            "数学：高数/线代各完成 2讲 + 1000题基础（建议每讲20–40题）",
+            "数学：完成张宇30讲共 2 讲 + 对应 1000 题基础（建议每讲 20–40 题）",
             "英语：精读3篇（逐句+定位+错因）",
             "信号：第1章一页纸总结（定义/性质/易错点）",
         ],
@@ -518,7 +553,7 @@ const weeklyOverrides: Record<number, Partial<WeekPlan>> = {
     },
     2: {
         subjects: {
-            math: "高数30讲 L3–4 + 1000基础；线代30讲 L3–4 + 1000基础",
+            math: "张宇30讲：高数 L3–4（2讲）+ 对应基础题；继续整理前两周错题。",
             english: "红宝书2单元；阅读100（基础）3篇精读；拆分与组合 2节",
             signals: "第1章收尾 + 第2章开头（连续卷积准备）+ 960题本章",
             politics: "不安排",
@@ -527,7 +562,7 @@ const weeklyOverrides: Record<number, Partial<WeekPlan>> = {
     },
     3: {
         subjects: {
-            math: "高数30讲 L5–6 + 1000基础；线代30讲 L5–6 + 1000基础",
+            math: "张宇30讲：高数 L5–6（2讲）+ 对应基础题；错题本继续滚动。",
             english: "阅读100（基础）3篇精读；完形入门（不计分）",
             signals: "第2章（连续卷积/LTI）推进 + 960题",
             politics: "不安排",
@@ -536,7 +571,7 @@ const weeklyOverrides: Record<number, Partial<WeekPlan>> = {
     },
     4: {
         subjects: {
-            math: "高数30讲 L7–8 + 1000基础；线代30讲 L7–8 + 1000基础（周末做一次高数小测60–90min）",
+            math: "张宇30讲：高数 L7–8（2讲）+ 对应基础题（周末做一次高数小测 60–90min）",
             english: "阅读100（基础）2篇精读 + 1篇限时；红宝书2单元",
             signals: "第2章收尾 + 960题本章；一页纸总结",
             politics: "不安排",
@@ -549,15 +584,20 @@ function defaultWeekPlan(weekNo: number): WeekPlan {
     const phase = getPhaseForWeek(weekNo);
 
     if (weekNo <= 18) {
+        const mathPlan = MATH_LECTURE_PLAN[weekNo] || "张宇30讲推进：每周至少 2 讲 + 对应基础题";
+        const mathOutput = weekNo <= 15
+            ? "数学：本周完成张宇30讲至少 2 讲，并完成对应基础题训练"
+            : "数学：本周以一轮复盘/补弱/阶段自测为主，清理张宇30讲遗留薄弱点";
+
         return {
             subjects: {
-                math: "30讲推进 + 1000题基础（每讲输出）",
+                math: mathPlan,
                 english: "阅读训练/真题精读 + 拆分与组合",
                 signals: "手写笔记推进 + 960题",
                 politics: "不安排或轻占位",
             },
-            outputs: ["错题本三行法", "每章一页纸总结"],
-            notes: [phase.tip],
+            outputs: [mathOutput, "错题本三行法", "每章一页纸总结"],
+            notes: [phase.tip, weekNo <= 15 ? "张宇30讲总量按三科合计 30 讲计算，本阶段按每周至少 2 讲推进。" : "本阶段后半程以一轮收尾和补弱为主，不再机械追加新讲数。"],
         };
     }
 
@@ -865,6 +905,9 @@ export default function StudyCalendarLab() {
     const [customTaskDraft, setCustomTaskDraft] = useState<string>("");
 
     const monthGrid = useMemo(() => buildMonthGrid(monthCursor), [monthCursor]);
+    const examDate = useMemo(() => parseISODate(EXAM_DATE_ISO), []);
+    const daysToExam = useMemo(() => Math.max(0, Math.ceil((examDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))), [examDate, today]);
+    const currentWeekByToday = useMemo(() => getWeekByDate(weeks, today), [weeks, today]);
 
     const weekProgress = useMemo(() => {
         const cur = done[selectedWeekNo] || {};
@@ -880,6 +923,13 @@ export default function StudyCalendarLab() {
 
         return { outputsDone, customDone, total, ok, pct };
     }, [done, customTasks, selectedWeekNo, selectedWeek.plan.outputs]);
+
+    const mathLectureProgress = useMemo(() => {
+        const completedWeeks = Math.min(selectedWeekNo, 15);
+        const completedLectures = completedWeeks * 2;
+        const pct = Math.round((completedLectures / 30) * 100);
+        return { completedWeeks, completedLectures, totalLectures: 30, pct };
+    }, [selectedWeekNo]);
 
     const filteredSubjects = useMemo(() => {
         const list = SUBJECTS.filter((x) => filters[x.key]).map((x) => ({
@@ -1105,28 +1155,52 @@ export default function StudyCalendarLab() {
             </Modal>
 
             {/* Fullscreen stage wrapper */}
-            <div className="h-full w-full overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+            <div className="h-full w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_30%,#f8fafc_100%)] dark:bg-[linear-gradient(180deg,#0a0a0a_0%,#111827_35%,#020617_100%)]">
                 <div className="h-full w-full overflow-auto p-4 md:p-8">
                     <div className="mx-auto max-w-7xl space-y-6">
                         {/* Header */}
-                        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                            <div className="space-y-1">
-                                <div className="inline-flex items-center gap-2">
-                                    <div className="h-9 w-9 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shadow-sm">
-                                        <Icon name="calendar" className="h-5 w-5" />
+                        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 p-5 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90 md:p-7">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.12),transparent_28%),radial-gradient(circle_at_left,rgba(14,165,233,0.10),transparent_24%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.18),transparent_28%),radial-gradient(circle_at_left,rgba(14,165,233,0.14),transparent_24%)]" />
+                            <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                                <div className="space-y-4">
+                                    <div className="inline-flex items-center gap-3">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm dark:bg-white dark:text-neutral-900">
+                                            <Icon name="calendar" className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+                                                26考研周计划 · 日历视图
+                                            </div>
+                                            <div className="mt-1 text-sm text-slate-600 dark:text-neutral-300">
+                                                {PLAN_START_ISO} 起算 · {EXAM_DATE_ISO} 考试 · 共 43 周
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                                            26考研周计划 · 日历视图
-                                        </div>
-                                        <div className="text-sm text-slate-600 dark:text-neutral-300">
-                                            {PLAN_START_ISO} → {EXAM_DATE_ISO} · 共 43 周
-                                        </div>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">第一周：2026/03/02 - 2026/03/08</Badge>
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">当前查看：W{selectedWeekNo}</Badge>
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">距考试约 {daysToExam} 天</Badge>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+                                    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
+                                        <div className="text-xs text-slate-500 dark:text-neutral-400">当前周</div>
+                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{currentWeekByToday ? `W${currentWeekByToday.weekNo}` : "计划外"}</div>
+                                    </div>
+                                    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
+                                        <div className="text-xs text-slate-500 dark:text-neutral-400">数学总讲数</div>
+                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">30 讲</div>
+                                    </div>
+                                    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
+                                        <div className="text-xs text-slate-500 dark:text-neutral-400">推进节奏</div>
+                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">每周 ≥ 2 讲</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative mt-5 flex flex-wrap items-center gap-2">
                                 <Button variant="outline" onClick={() => jumpToWeek(selectedWeekNo - 1)}>
                                     上一周
                                 </Button>
@@ -1174,6 +1248,12 @@ export default function StudyCalendarLab() {
                                             ))}
                                         </div>
 
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-neutral-300">
+                                            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-slate-900 dark:bg-white" /> 当前选中周</span>
+                                            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-sky-500" /> 复盘日</span>
+                                            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> 今天</span>
+                                        </div>
+
                                         <div className="space-y-1">
                                             {monthGrid.rows.map((row, rIdx) => (
                                                 <div key={rIdx} className="grid grid-cols-7 gap-1">
@@ -1183,6 +1263,7 @@ export default function StudyCalendarLab() {
                                                         const isInPlan = w != null;
                                                         const isSelectedWeek = isInPlan && inRange(d, selectedWeekStart, selectedWeekEnd);
                                                         const isToday = isSameDay(d, today);
+                                                        const isReviewDay = isInPlan && ((d.getDay() + 6) % 7) === prefs.reviewDayIndex;
 
                                                         return (
                                                             <button
@@ -1212,6 +1293,11 @@ export default function StudyCalendarLab() {
                                                                             W{w.weekNo}
                                                                         </div>
                                                                     ) : null}
+                                                                </div>
+
+                                                                <div className="mt-2 flex items-center gap-1.5">
+                                                                    {isReviewDay ? <span className={cn("h-2 w-2 rounded-full", isSelectedWeek ? "bg-sky-300 dark:bg-sky-500" : "bg-sky-500")} title="复盘日" /> : null}
+                                                                    {w ? <span className={cn("h-2 w-2 rounded-full", getWeekTemporalState(w, today) === "past" ? "bg-slate-300 dark:bg-neutral-600" : getWeekTemporalState(w, today) === "current" ? "bg-emerald-500" : "bg-amber-400")} title={getWeekStatusLabel(getWeekTemporalState(w, today))} /> : null}
                                                                 </div>
 
                                                                 {isToday ? (
@@ -1244,6 +1330,7 @@ export default function StudyCalendarLab() {
                                             {weeks.map((w) => {
                                                 const isActive = w.weekNo === selectedWeekNo;
                                                 const p = getPhaseForWeek(w.weekNo);
+                                                const state = getWeekTemporalState(w, today);
                                                 return (
                                                     <button
                                                         key={w.weekNo}
@@ -1264,9 +1351,23 @@ export default function StudyCalendarLab() {
                                                                     {w.weekStartISO} → {w.weekEndISO}
                                                                 </div>
                                                             </div>
-                                                            <Badge className={cn(isActive ? "bg-white/10 dark:bg-neutral-900/10 text-white dark:text-neutral-900" : p.color, "border-transparent")}>
-                                                                阶段 {p.id}
-                                                            </Badge>
+                                                            <div className="flex items-center gap-2">
+                                                                <Badge className={cn(isActive ? "bg-white/10 dark:bg-neutral-900/10 text-white dark:text-neutral-900" : p.color, "border-transparent")}>
+                                                                    阶段 {p.id}
+                                                                </Badge>
+                                                                <span className={cn(
+                                                                    "rounded-full px-2 py-1 text-[10px] font-medium border",
+                                                                    isActive
+                                                                        ? "border-white/20 text-white/80 dark:border-neutral-700 dark:text-neutral-700"
+                                                                        : state === "past"
+                                                                            ? "border-slate-200 text-slate-500 dark:border-neutral-800 dark:text-neutral-400"
+                                                                            : state === "current"
+                                                                                ? "border-emerald-200 text-emerald-700 dark:border-emerald-900/70 dark:text-emerald-300"
+                                                                                : "border-amber-200 text-amber-700 dark:border-amber-900/70 dark:text-amber-300"
+                                                                )}>
+                                                                    {getWeekStatusLabel(state)}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </button>
                                                 );
@@ -1278,6 +1379,19 @@ export default function StudyCalendarLab() {
 
                             {/* Right */}
                             <div className="lg:col-span-7 space-y-6">
+                                <div className="sticky top-0 z-20 -mx-1 rounded-[1.75rem] border border-slate-200/80 bg-white/85 p-3 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/85">
+                                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Badge className="border-transparent bg-slate-900 text-white dark:bg-white dark:text-neutral-900">W{selectedWeekNo}</Badge>
+                                            <span className="text-sm font-medium text-slate-900 dark:text-white">{formatWeekRange(selectedWeekStart, selectedWeekEnd)}</span>
+                                            <span className="text-sm text-slate-500 dark:text-neutral-400">· {phase.name}</span>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-neutral-300">
+                                            <span>本周完成 {weekProgress.ok}/{weekProgress.total}</span>
+                                            <span>张宇 30 讲已规划 {Math.min(mathLectureProgress.completedLectures, 30)}/30</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 <Card>
                                     <CardHeader className="pb-3">
                                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -1332,15 +1446,32 @@ export default function StudyCalendarLab() {
                                             </div>
                                         </div>
 
-                                        <div className="rounded-3xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div>
-                                                    <div className="text-sm font-semibold text-slate-900 dark:text-white">本周进度</div>
-                                                    <div className="text-xs text-slate-600 dark:text-neutral-300">完成 {weekProgress.ok}/{weekProgress.total} · {weekProgress.pct}%</div>
+                                        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                                            <div className="rounded-3xl border border-slate-200 dark:border-neutral-800 bg-gradient-to-br from-white to-slate-50 p-4 dark:from-neutral-950 dark:to-neutral-900">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-slate-900 dark:text-white">本周进度</div>
+                                                        <div className="text-xs text-slate-600 dark:text-neutral-300">完成 {weekProgress.ok}/{weekProgress.total} · {weekProgress.pct}%</div>
+                                                    </div>
+                                                    <div className="inline-flex items-center gap-2">
+                                                        <Icon name="spark" className="h-4 w-4 text-slate-700 dark:text-neutral-200" />
+                                                        <div className="text-sm font-medium text-slate-900 dark:text-white">目标：复盘质量＞数量</div>
+                                                    </div>
                                                 </div>
-                                                <div className="inline-flex items-center gap-2">
-                                                    <Icon name="spark" className="h-4 w-4 text-slate-700 dark:text-neutral-200" />
-                                                    <div className="text-sm font-medium text-slate-900 dark:text-white">目标：复盘质量＞数量</div>
+                                            </div>
+
+                                            <div className="rounded-3xl border border-slate-200 dark:border-neutral-800 bg-gradient-to-br from-white to-indigo-50/60 p-4 dark:from-neutral-950 dark:to-indigo-950/20">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-slate-900 dark:text-white">张宇 30 讲进度</div>
+                                                        <div className="text-xs text-slate-600 dark:text-neutral-300">
+                                                            已规划 {Math.min(mathLectureProgress.completedLectures, 30)}/30 讲 · 前 15 周每周 2 讲
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm font-semibold text-slate-900 dark:text-white">{Math.min(mathLectureProgress.pct, 100)}%</div>
+                                                </div>
+                                                <div className="mt-3 h-2 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                                                    <div className="h-full rounded-full bg-slate-900 dark:bg-white" style={{ width: `${Math.min(mathLectureProgress.pct, 100)}%` }} />
                                                 </div>
                                             </div>
                                         </div>
@@ -1367,7 +1498,7 @@ export default function StudyCalendarLab() {
                                                             <div className="text-sm text-slate-600 dark:text-neutral-300">没有匹配到内容，换个关键词试试。</div>
                                                         ) : (
                                                             filteredSubjects.map((s) => (
-                                                                <div key={s.key} className="rounded-3xl border border-slate-200 dark:border-neutral-800 p-4">
+                                                                <div key={s.key} className="rounded-3xl border border-slate-200 dark:border-neutral-800 bg-gradient-to-br from-white to-slate-50/80 p-4 shadow-sm dark:from-neutral-950 dark:to-neutral-900">
                                                                     <div className="flex items-start justify-between gap-3">
                                                                         <div className="space-y-1">
                                                                             <div className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -1502,9 +1633,9 @@ export default function StudyCalendarLab() {
                                                                 <div className="text-xs text-slate-600 dark:text-neutral-300">默认每周最后一天是复盘日</div>
                                                             </div>
                                                             <div className="flex flex-wrap gap-2">
-                                                                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                                                                    <Pill key={i} active={prefs.reviewDayIndex === i} onClick={() => setPrefs((p) => ({ ...p, reviewDayIndex: i }))}>
-                                                                        Day{i + 1}
+                                                                {[[0, "周一"], [1, "周二"], [2, "周三"], [3, "周四"], [4, "周五"], [5, "周六"], [6, "周日"]].map(([i, label]) => (
+                                                                    <Pill key={i as number} active={prefs.reviewDayIndex === i} onClick={() => setPrefs((p) => ({ ...p, reviewDayIndex: i as number }))}>
+                                                                        {label as string}
                                                                     </Pill>
                                                                 ))}
                                                             </div>
