@@ -1178,24 +1178,24 @@ export default function StudyCalendarLab() {
                                     </div>
 
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">第一周：2026/03/02 - 2026/03/08</Badge>
-                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">当前查看：W{selectedWeekNo}</Badge>
-                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">距考试约 {daysToExam} 天</Badge>
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+                                            第一周：2026/03/02 - 2026/03/08
+                                        </Badge>
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+                                            当前查看：W{selectedWeekNo}
+                                        </Badge>
+                                        <Badge className="border-slate-200 bg-slate-100 text-slate-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+                                            距考试约 {daysToExam} 天
+                                        </Badge>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+                                <div className="flex w-full justify-end xl:w-auto">
                                     <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
                                         <div className="text-xs text-slate-500 dark:text-neutral-400">当前周</div>
-                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{currentWeekByToday ? `W${currentWeekByToday.weekNo}` : "计划外"}</div>
-                                    </div>
-                                    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
-                                        <div className="text-xs text-slate-500 dark:text-neutral-400">数学总讲数</div>
-                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">30 讲</div>
-                                    </div>
-                                    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/80">
-                                        <div className="text-xs text-slate-500 dark:text-neutral-400">推进节奏</div>
-                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">每周 ≥ 2 讲</div>
+                                        <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                                            {currentWeekByToday ? `W${currentWeekByToday.weekNo}` : "计划外"}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
